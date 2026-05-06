@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Antisslopedi</title>
+    </head>
+    <body class="background">
+        <div class="topNavigation"></div>
+
+        <div class="site-wrapper">
+            <main class="site-content">
+                <div class="container-right">
+                    <button id="darkModeButton" onclick="switchColorScheme()">dark mode</button>
+                </div>
+
+                <h1 class="straightText" style="text-align:center; font-size:300%;">Antisslopedi</h1>
+                <p class="straightText" style="text-align:center; font-size:110%; opacity:0.9;">Tıss evreninin ansiklopedisi</p>
+
+                <div id="char-grid" class="projects-grid" style="margin-top:30px;">
+                    <p class="straightText" id="loading-msg" style="font-size:large;">yükleniyor...</p>
+                </div>
+            </main>
+
+            <footer class="site-footer">
+                <div class="footer-content" id="footer">
+                    <div class="footer-section">
+                        <h4>Antisslopedi</h4>
+                        <p>Tıss evreninin gayri resmi ansiklopedisi.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Bağlantılar</h4>
+                        <ul>
+                            <li><a href="https://jopseps.com">jopseps.com</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    © 2025 Jopseps. All rights reserved.
+                </div>
+            </footer>
+        </div>
+
+        <script src="files/js/features.js"></script>
+        <script>
+            const API = location.hostname === "localhost"
+                ? "http://localhost:8787"
+                : "https://antisslopedi-server.yusufmertturan.workers.dev";
+
+            function initials(name){
+                return name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0,2).toUpperCase();
+            }
+
+            async function loadGrid(){
+                let chars;
+                try{
+                    const res = await fetch(`${API}/api/characters`);
+                    if(!res.ok) throw new Error(res.status);
+                    chars = await res.json();
+                }catch(e){
+                    document.getElementById("loading-msg").textContent = "Yüklenemedi.";
+                    return;
+                }
+
+                const grid = document.getElementById("char-grid");
+                grid.innerHTML = "";
+
+                chars.forEach(char => {
+                    const imgHtml = char.image
+                        ? `<img src="${char.image}" alt="${char.name}">`
+                        : `<div class="char-card-placeholder">${initials(char.name)}</div>`;
+
+                    const card = document.createElement("a");
+                    card.href = `wiki.html?char=${encodeURIComponent(char.id)}`;
+                    card.className = "char-card";
+                    card.innerHTML = `
+                        <div class="char-card-img">${imgHtml}</div>
+                        <div class="char-card-info">
+                            <h3>${char.name}</h3>
+                            <p class="char-card-summary">${char.summary || ""}</p>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                applyColorScheme();
+            }
+
+            loadGrid();
+        </script>
+    </body>
+</html>

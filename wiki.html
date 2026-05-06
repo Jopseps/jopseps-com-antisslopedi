@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Antisslopedi</title>
+    </head>
+    <body class="background">
+        <div class="topNavigation"></div>
+
+        <div class="site-wrapper">
+            <main class="site-content">
+                <div class="container-right">
+                    <button id="darkModeButton" onclick="switchColorScheme()">dark mode</button>
+                </div>
+
+                <div class="interactiveText-wrapper" style="justify-content:flex-start; padding-left:10%; padding-top:15px;">
+                    <a href="index.html"><h3 class="interactiveText" style="text-align:left; font-weight:900;">← Antisslopedi</h3></a>
+                </div>
+
+                <section class="wiki-grid">
+                    <nav class="wiki-toc" id="wiki-toc" aria-label="İçindekiler">
+                        <div class="wiki-toc-title">İçindekiler</div>
+                        <ol id="wiki-toc-list"></ol>
+                    </nav>
+
+                    <article class="wiki-article" id="article">
+                        <header class="wiki-lead">
+                            <h1 class="wiki-title" id="wiki-title">yükleniyor...</h1>
+                            <p class="wiki-summary" id="wiki-summary"></p>
+                        </header>
+                        <div id="wiki-sections"></div>
+                    </article>
+
+                    <aside class="wiki-infobox" aria-label="Bilgi kutusu">
+                        <figure class="wiki-infobox-image" id="infobox-image"></figure>
+                        <figcaption id="infobox-caption" style="text-align:center; margin-top:6px; font-size:90%; opacity:0.9;"></figcaption>
+                        <div class="wiki-infobox-body" id="infobox-body"></div>
+                    </aside>
+                </section>
+            </main>
+
+            <footer class="site-footer">
+                <div class="footer-content" id="footer">
+                    <div class="footer-section">
+                        <h4>Antisslopedi</h4>
+                        <p>Tıss evreninin gayri resmi ansiklopedisi.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Bağlantılar</h4>
+                        <ul>
+                            <li><a href="index.html">Ana Sayfa</a></li>
+                            <li><a href="https://jopseps.com">jopseps.com</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    © 2025 Jopseps. All rights reserved.
+                </div>
+            </footer>
+        </div>
+
+        <script src="files/js/features.js"></script>
+        <script src="files/js/wiki.js"></script>
+    </body>
+</html>
