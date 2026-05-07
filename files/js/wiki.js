@@ -1,4 +1,4 @@
-const API = location.hostname === "localhost"
+const API = location.hostname === "localhost" || location.hostname === "127.0.0.1"
     ? "http://localhost:8787"
     : "https://antisslopedi-server.yusufmertturan.workers.dev";
 
@@ -42,9 +42,9 @@ function renderArticle(char){
 
     html += `<section class="wiki-section"><h2>Genel</h2><p>${escHtml(char.description || "")}</p></section>`;
 
-    if(char.abilities && char.abilities.length){
-        html += `<section class="wiki-section"><h2>Güçler</h2><ul>`;
-        char.abilities.forEach(a => { html += `<li>${escHtml(a)}</li>`; });
+    if(char.features && char.features.length){
+        html += `<section class="wiki-section"><h2>Özellikler</h2><ul>`;
+        char.features.forEach(a => { html += `<li>${escHtml(a)}</li>`; });
         html += `</ul></section>`;
     }
 
