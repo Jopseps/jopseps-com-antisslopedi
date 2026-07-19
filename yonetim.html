@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="styles.css">
-        <title>Antisslopedi</title>
+        <title>Yönetim — Antisslopedi</title>
     </head>
     <body class="background">
         <div class="site-wrapper">
@@ -19,32 +19,33 @@
                 </div>
             </header>
             <main class="site-content">
-                <section class="wiki-grid">
-                    <nav class="wiki-toc" id="wiki-toc" aria-label="İçindekiler">
-                        <button class="wiki-toc-title" type="button" onclick="toggleTOC()">İçindekiler</button>
-                        <ol id="wiki-toc-list"></ol>
-                    </nav>
+                <h1 class="straightText section-title" style="margin-top:18px;">Yönetim</h1>
+                <p class="form-error" id="admin-error" style="text-align:center;"></p>
 
-                    <article class="wiki-article" id="article">
-                        <header class="wiki-lead">
-                            <div class="wiki-actions" id="wiki-actions"></div>
-                            <h1 class="wiki-title" id="wiki-title"><span class="wiki-skeleton title" style="display:block;"></span></h1>
-                            <p class="wiki-summary" id="wiki-summary"></p>
-                        </header>
-                        <div id="wiki-sections">
-                            <div class="wiki-skeleton wide"></div>
-                            <div class="wiki-skeleton mid"></div>
-                            <div class="wiki-skeleton wide"></div>
-                            <div class="wiki-skeleton short"></div>
-                        </div>
-                    </article>
+                <div class="admin-card">
+                    <h2 class="straightText">İstatistikler</h2>
+                    <p class="straightText" id="stats-line">yükleniyor...</p>
+                </div>
 
-                    <aside class="wiki-infobox" aria-label="Bilgi kutusu">
-                        <figure class="wiki-infobox-image" id="infobox-image"><div class="wiki-skeleton portrait"></div></figure>
-                        <figcaption id="infobox-caption" style="text-align:center; margin-top:6px; font-size:90%; opacity:0.9;"></figcaption>
-                        <div class="wiki-infobox-body" id="infobox-body"></div>
-                    </aside>
-                </section>
+                <div class="admin-card">
+                    <h2 class="straightText">Kullanıcılar</h2>
+                    <div id="user-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                </div>
+
+                <div class="admin-card">
+                    <h2 class="straightText">Davet Kodu</h2>
+                    <p class="straightText" style="font-size:90%; opacity:0.85;">Bu kodla kayıt olanlar direkt editör olur.</p>
+                    <div class="edit-row">
+                        <input id="invite-input" class="form-input" placeholder="yükleniyor...">
+                        <button class="form-btn" type="button" onclick="saveInvite()">Kaydet</button>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <h2 class="straightText">Silinen Karakterler</h2>
+                    <p class="straightText" style="font-size:90%; opacity:0.85;">Sayfası silinmiş ama geçmişi duran karakterler. Geri yükleme son sürümden yeni sayfa açar.</p>
+                    <div id="deleted-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                </div>
             </main>
 
             <footer class="site-footer">
@@ -70,6 +71,6 @@
 
         <script src="files/js/features.js"></script>
         <script src="files/js/auth.js"></script>
-        <script src="files/js/wiki.js"></script>
+        <script src="files/js/yonetim.js"></script>
     </body>
 </html>
