@@ -23,3 +23,5 @@ Disallow: /
 # Adam olun
 User-agent: *
 Allow: /
+
+Sitemap: https://antisslopedi.jopseps.com/sitemap.xml

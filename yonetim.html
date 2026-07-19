@@ -4,6 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="styles.css">
+        <link rel="icon" href="files/images/favicon.svg" type="image/svg+xml">
+        <meta name="description" content="Tıss evreninin resmi ansiklopedisi.">
+        <meta name="theme-color" content="#1e1e1e">
+        <meta property="og:site_name" content="Antısslopedi">
+        <meta property="og:title" content="Yönetim — Antısslopedi">
+        <meta property="og:description" content="Tıss evreninin resmi ansiklopedisi.">
+        <meta property="og:type" content="website">
         <title>Yönetim — Antısslopedi</title>
     </head>
     <body class="background">
@@ -22,29 +29,34 @@
                 <h1 class="straightText section-title" style="margin-top:18px;">Yönetim</h1>
                 <p class="form-error" id="admin-error" style="text-align:center;"></p>
 
-                <div class="admin-card">
-                    <h2 class="straightText">İstatistikler</h2>
-                    <p class="straightText" id="stats-line">yükleniyor...</p>
-                </div>
-
-                <div class="admin-card">
-                    <h2 class="straightText">Kullanıcılar</h2>
-                    <div id="user-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
-                </div>
-
-                <div class="admin-card">
-                    <h2 class="straightText">Davet Kodu</h2>
-                    <p class="straightText" style="font-size:90%; opacity:0.85;">Bu kodla kayıt olanlar direkt editör olur.</p>
-                    <div class="edit-row">
-                        <input id="invite-input" class="form-input" placeholder="yükleniyor...">
-                        <button class="form-btn" type="button" onclick="saveInvite()">Kaydet</button>
+                <div class="admin-panel">
+                    <div class="admin-tabs">
+                        <button class="admin-tab active" id="tabbtn-stats" type="button" onclick="showTab('stats')">İstatistik</button>
+                        <button class="admin-tab" id="tabbtn-users" type="button" onclick="showTab('users')">Kullanıcılar</button>
+                        <button class="admin-tab" id="tabbtn-archive" type="button" onclick="showTab('archive')">Arşiv</button>
+                        <button class="admin-tab" id="tabbtn-settings" type="button" onclick="showTab('settings')">Ayarlar</button>
                     </div>
-                </div>
 
-                <div class="admin-card">
-                    <h2 class="straightText">Silinen Karakterler</h2>
-                    <p class="straightText" style="font-size:90%; opacity:0.85;">Sayfası silinmiş ama geçmişi duran karakterler. Geri yükleme son sürümden yeni sayfa açar.</p>
-                    <div id="deleted-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                    <div class="admin-tab-content" id="tab-stats">
+                        <div class="stat-cards" id="stat-cards"><p class="straightText">yükleniyor...</p></div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-users" style="display:none;">
+                        <div id="user-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-archive" style="display:none;">
+                        <p class="straightText admin-hint">Sayfası silinmiş ama geçmişi duran karakterler. Geri yükleme son sürümden yeni sayfa açar.</p>
+                        <div id="deleted-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-settings" style="display:none;">
+                        <p class="straightText admin-hint">Bu kodla kayıt olanlar direkt editör olur. Kodsuz kayıt salt okunur hesap açar.</p>
+                        <div class="edit-row">
+                            <input id="invite-input" class="form-input" placeholder="yükleniyor...">
+                            <button class="form-btn" type="button" onclick="saveInvite()">Kaydet</button>
+                        </div>
+                    </div>
                 </div>
             </main>
 

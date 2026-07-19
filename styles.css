@@ -436,20 +436,73 @@ html{
 }
 
 /* --- Admin panel --- */
-.admin-card{
-    max-width: 800px;
-    margin: 18px auto;
+.admin-panel{
+    max-width: 880px;
+    margin: 18px auto 40px;
     background-color: #ffffff;
     border: 2px solid #cccccc;
     border-radius: 12px;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    overflow: hidden;
 }
 
-.admin-card h2{
-    font-size: 120%;
+.admin-tabs{
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 2px solid #cccccc;
+}
+
+.admin-tab{
+    font: inherit;
+    font-weight: 700;
+    color: #000000;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 12px 18px;
+    cursor: pointer;
+}
+
+.admin-tab:hover{
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.admin-tab.active{
+    border-bottom-color: #1e1e1e;
+}
+
+.admin-tab-content{
+    padding: 16px 20px 20px;
+}
+
+.admin-hint{
+    font-size: 90%;
+    opacity: 0.85;
+    margin-bottom: 10px;
+}
+
+.stat-cards{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.stat-card{
+    border: 2px solid #cccccc;
+    border-radius: 10px;
+    padding: 16px 10px;
+    text-align: center;
+}
+
+.stat-num{
+    font-size: 30px;
+    font-weight: 900;
+    color: #000000;
+}
+
+.stat-label{
+    font-size: 13px;
+    opacity: 0.75;
+    color: #000000;
 }
 
 .admin-list{
@@ -461,6 +514,99 @@ html{
 .admin-list .rev-row{
     border-width: 1px;
     padding: 8px 12px;
+}
+
+.rev-row-actions .form-btn{
+    padding: 4px 10px;
+    font-size: 13px;
+}
+
+.role-badge{
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid #bbbbbb;
+    background-color: #f0f0f0;
+    color: #000000;
+}
+
+.role-badge.admin{
+    background-color: #fdecc8;
+    border-color: #d4a72c;
+}
+
+.role-badge.editor{
+    background-color: #ddf4ff;
+    border-color: #54aeff;
+}
+
+.role-badge.banned{
+    background-color: #ffebe9;
+    border-color: #ff8182;
+}
+
+/* --- Revision diff (git-style) --- */
+.compare-bar{
+    max-width: 800px;
+    margin: 14px auto 0;
+    padding: 0 5%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.compare-bar .form-btn{
+    width: auto;
+}
+
+.rev-radios{
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.diff-del{
+    background-color: #ffebe9;
+    color: #82071e;
+    text-decoration: line-through;
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+.diff-add{
+    background-color: #dafbe1;
+    color: #116329;
+    border-radius: 3px;
+    padding: 0 3px;
+}
+
+.wiki-badge.diff-del,
+.wiki-badge.diff-add{
+    border-color: currentColor;
+}
+
+.diff-field{
+    margin-top: 12px;
+}
+
+.diff-field-title{
+    font-weight: 800;
+    color: #000000;
+    margin-bottom: 3px;
+}
+
+.diff-body{
+    line-height: 1.7;
+}
+
+/* --- Own password form (profile) --- */
+.pass-form{
+    margin: 14px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 320px;
 }
 
 /* Featured cards: same card, bigger frame */
@@ -1039,9 +1185,66 @@ body.dark .edit-card,
 body.dark .rev-row,
 body.dark .rev-preview,
 body.dark .profile-card,
-body.dark .admin-card{
+body.dark .admin-panel{
     background-color: rgb(50, 50, 50);
     border-color: rgb(100, 100, 100);
+}
+
+body.dark .admin-tabs{
+    border-bottom-color: rgb(100, 100, 100);
+}
+
+body.dark .admin-tab{
+    color: #ffffff;
+}
+
+body.dark .admin-tab:hover{
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.dark .admin-tab.active{
+    border-bottom-color: #ffffff;
+}
+
+body.dark .stat-card{
+    border-color: rgb(100, 100, 100);
+}
+
+body.dark .stat-num,
+body.dark .stat-label,
+body.dark .diff-field-title{
+    color: #ffffff;
+}
+
+body.dark .role-badge{
+    background-color: rgb(60, 60, 60);
+    border-color: rgb(150, 150, 150);
+    color: #ffffff;
+}
+
+body.dark .role-badge.admin{
+    background-color: rgb(90, 70, 20);
+    border-color: #d4a72c;
+}
+
+body.dark .role-badge.editor{
+    background-color: rgb(20, 60, 90);
+    border-color: #54aeff;
+}
+
+body.dark .role-badge.banned{
+    background-color: rgb(90, 30, 30);
+    border-color: #ff8182;
+}
+
+body.dark .diff-del{
+    background-color: rgb(90, 30, 30);
+    color: #ffb3ad;
+}
+
+body.dark .diff-add{
+    background-color: rgb(18, 53, 29);
+    color: #7ee2a8;
 }
 
 body.dark .changes-box{
