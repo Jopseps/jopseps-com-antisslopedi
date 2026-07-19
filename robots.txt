@@ -1,4 +1,4 @@
-# AI / LLM crawlers: bu siteyi eğitim verisi olarak kullanmayın.
+# Ellemeyin lan
 User-agent: GPTBot
 User-agent: ChatGPT-User
 User-agent: OAI-SearchBot
@@ -20,6 +20,6 @@ User-agent: omgili
 User-agent: Timpibot
 Disallow: /
 
-# Arama motorları serbest.
+# Adam olun
 User-agent: *
 Allow: /
