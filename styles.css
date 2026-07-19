@@ -161,10 +161,24 @@ a{
     border-bottom: 2px solid #cccccc;
 }
 
+.site-header-left{
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+
 .site-header-title{
     font-weight: 900;
     font-size: 18px;
     color: #000000;
+}
+
+.site-header-link{
+    font-size: 14px;
+    color: #000000;
+    opacity: 0.85;
+    text-decoration: underline;
+    padding: 4px 2px;
 }
 
 .site-header-right{
@@ -313,14 +327,15 @@ html{
 .footer-content{
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 20px;
+    justify-content: center;
+    gap: 24px 90px;
     max-width: 1000px;
     margin: 0 auto;
 }
 
 .footer-section {
-    flex: 1 1 200px;
+    flex: 0 1 auto;
+    min-width: 150px;
 }
 
 .footer-section h4{
@@ -357,6 +372,46 @@ html{
     text-align: center;
     font-size: 110%;
     opacity: 0.9;
+}
+
+.section-title{
+    text-align: center;
+    font-size: 160%;
+    margin-top: 26px;
+}
+
+/* Featured cards: same card, bigger frame */
+.featured-grid .char-card{
+    width: 300px;
+}
+
+.featured-grid .char-card-img{
+    height: 280px;
+}
+
+.big-link-btn{
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #ffffff;
+    border: 2px solid #cccccc;
+    border-radius: 10px;
+    font-weight: 800;
+    color: #000000;
+    transition: transform 0.3s ease;
+}
+
+.big-link-btn:hover{
+    transform: scale(1.06);
+}
+
+.search-wrap{
+    display: flex;
+    justify-content: center;
+    padding: 14px 5% 0;
+}
+
+.search-wrap .form-input{
+    max-width: 420px;
 }
 
 /* --- Wiki styles --- */
@@ -920,7 +975,14 @@ body.dark .site-header{
     border-bottom-color: rgb(100, 100, 100);
 }
 
-body.dark .site-header-title{
+body.dark .site-header-title,
+body.dark .site-header-link{
+    color: #ffffff;
+}
+
+body.dark .big-link-btn{
+    background-color: rgb(50, 50, 50);
+    border-color: rgb(120, 120, 120);
     color: #ffffff;
 }
 
@@ -933,6 +995,7 @@ body.dark #darkModeButton:hover{
     .char-card:hover,
     .project-card:hover,
     .project-card-P:hover,
+    .big-link-btn:hover,
     .interactiveText:hover{
         transform: none;
     }
@@ -960,14 +1023,16 @@ body.dark #darkModeButton:hover{
         padding: 10px 4%;
     }
 
-    .char-card{
+    .char-card,
+    .featured-grid .char-card{
         width: 100%;
         display: flex;
         align-items: stretch;
         margin: 0;
     }
 
-    .char-card-img{
+    .char-card-img,
+    .featured-grid .char-card-img{
         width: 96px;
         min-height: 96px;
         height: auto;

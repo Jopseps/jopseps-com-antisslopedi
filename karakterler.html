@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="styles.css">
-        <title>Antisslopedi</title>
+        <title>Karakterler — Antisslopedi</title>
     </head>
     <body class="background">
         <div class="site-wrapper">
@@ -19,17 +19,14 @@
                 </div>
             </header>
             <main class="site-content">
-                <h1 class="straightText hero-title">Antisslopedi</h1>
-                <p class="straightText hero-sub">Tıss evreninin ansiklopedisi</p>
-                <div class="container" id="new-char-slot" style="margin-top:8px;"></div>
+                <h1 class="straightText section-title" style="margin-top:18px;">Tüm Karakterler</h1>
 
-                <h2 class="straightText section-title">Öne Çıkanlar</h2>
-                <div id="featured-grid" class="projects-grid featured-grid">
-                    <p class="straightText" id="loading-msg" style="font-size:large;">yükleniyor...</p>
+                <div class="search-wrap">
+                    <input id="char-search" class="form-input" type="search" placeholder="Karakter ara..." oninput="filterChars()">
                 </div>
 
-                <div class="container" style="margin:26px 0 40px;">
-                    <a href="karakterler.html" class="big-link-btn">Tüm Karakterler →</a>
+                <div id="char-grid" class="projects-grid" style="margin-top:20px;">
+                    <p class="straightText" id="loading-msg" style="font-size:large;">yükleniyor...</p>
                 </div>
             </main>
 
@@ -42,6 +39,7 @@
                     <div class="footer-section">
                         <h4>Bağlantılar</h4>
                         <ul>
+                            <li><a href="index.html">Ana Sayfa</a></li>
                             <li><a href="karakterler.html">Karakterler</a></li>
                             <li><a href="https://jopseps.com">jopseps.com</a></li>
                         </ul>
@@ -55,32 +53,6 @@
 
         <script src="files/js/features.js"></script>
         <script src="files/js/auth.js"></script>
-        <script>
-            if(getToken()){
-                document.getElementById("new-char-slot").innerHTML =
-                    `<a href="duzenle.html?new=1"><span class="interactiveText straightText" style="font-weight:700;">+ Yeni Karakter</span></a>`;
-            }
-
-            async function loadFeatured(){
-                let chars;
-                try{
-                    const res = await fetch(`${API}/api/characters`);
-                    if(!res.ok) throw new Error(res.status);
-                    chars = await res.json();
-                }catch(e){
-                    document.getElementById("loading-msg").textContent = "Yüklenemedi.";
-                    return;
-                }
-
-                let featured = chars.filter(c => c.featured);
-                if(!featured.length) featured = chars;
-
-                const grid = document.getElementById("featured-grid");
-                grid.innerHTML = "";
-                featured.forEach(char => grid.appendChild(charCard(char)));
-            }
-
-            loadFeatured();
-        </script>
+        <script src="files/js/karakterler.js"></script>
     </body>
 </html>
