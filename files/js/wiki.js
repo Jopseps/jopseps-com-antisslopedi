@@ -31,7 +31,7 @@ function renderActions(id){
     const el = document.getElementById("wiki-actions");
     if(!el) return;
     let html = `<a href="#" onclick="goBack();return false;">← Geri</a>`;
-    if(getToken()){
+    if(canEditRole()){
         html += `<a href="duzenle.html?char=${encodeURIComponent(id)}">Düzenle</a>`;
     }
     html += `<a href="gecmis.html?char=${encodeURIComponent(id)}">Geçmiş</a>`;
@@ -88,6 +88,10 @@ function renderArticle(char){
         html += `<section class="wiki-section"><h2>Kategoriler</h2><div class="wiki-categories">`;
         char.categories.forEach(c => { html += `<span class="wiki-badge">${escHtml(c)}</span>`; });
         html += `</div></section>`;
+    }
+
+    if(char.last_edit && char.last_edit.username){
+        html += `<p class="wiki-last-edit">son düzenleyen: <a href="kullanici.html?u=${encodeURIComponent(char.last_edit.username)}">${escHtml(char.last_edit.username)}</a> · ${escHtml((char.last_edit.created_at || "").slice(0, 16))}</p>`;
     }
 
     document.getElementById("wiki-sections").innerHTML = html;
