@@ -70,6 +70,7 @@ function fillForm(d){
     field("f-description").value = d.description || "";
     field("f-image").value = d.image || "";
     field("f-first-appearance").value = d.first_appearance || "";
+    field("f-featured").checked = !!d.featured;
     field("list-features").innerHTML = "";
     field("list-variants").innerHTML = "";
     field("list-categories").innerHTML = "";
@@ -146,6 +147,7 @@ async function save(){
         description: field("f-description").value,
         image: field("f-image").value,
         first_appearance: field("f-first-appearance").value,
+        featured: field("f-featured").checked ? 1 : 0,
         features: collectList("features"),
         variants: collectList("variants"),
         categories: collectList("categories"),

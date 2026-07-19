@@ -13,6 +13,23 @@ function initials(name){
     return name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toLocaleUpperCase("tr");
 }
 
+function charCard(char){
+    const imgHtml = char.image
+        ? `<img src="${escHtml(char.image)}" alt="${escHtml(char.name)}">`
+        : `<div class="char-card-placeholder">${escHtml(initials(char.name))}</div>`;
+    const card = document.createElement("a");
+    card.href = `wiki.html?char=${encodeURIComponent(char.id)}`;
+    card.className = "char-card";
+    card.innerHTML = `
+        <div class="char-card-img">${imgHtml}</div>
+        <div class="char-card-info">
+            <h3>${escHtml(char.name)}</h3>
+            <p class="char-card-summary">${escHtml(char.summary || "")}</p>
+        </div>
+    `;
+    return card;
+}
+
 function getToken(){
     return localStorage.getItem("antisslopedi_token");
 }

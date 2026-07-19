@@ -30,11 +30,25 @@ async function loadCharacter(){
 function renderActions(id){
     const el = document.getElementById("wiki-actions");
     if(!el) return;
-    let html = `<a href="gecmis.html?char=${encodeURIComponent(id)}">Geçmiş</a>`;
+    let html = `<a href="#" onclick="goBack();return false;">← Geri</a>`;
     if(getToken()){
-        html = `<a href="duzenle.html?char=${encodeURIComponent(id)}">Düzenle</a>` + html;
+        html += `<a href="duzenle.html?char=${encodeURIComponent(id)}">Düzenle</a>`;
     }
+    html += `<a href="gecmis.html?char=${encodeURIComponent(id)}">Geçmiş</a>`;
     el.innerHTML = html;
+}
+
+// history.back() only when we came from within the site; direct/shared links go home
+function goBack(){
+    let sameSite = false;
+    try{
+        sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
+    }catch(e){}
+    if(sameSite && history.length > 1){
+        history.back();
+    }else{
+        location.href = "index.html";
+    }
 }
 
 function renderArticle(char){
