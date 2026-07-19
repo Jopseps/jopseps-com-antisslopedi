@@ -86,6 +86,10 @@ async function initEditor(){
         location.href = "giris.html";
         return;
     }
+    if(!canEditRole()){
+        location.href = "index.html";
+        return;
+    }
 
     const params = new URLSearchParams(location.search);
     charId = params.get("char");
@@ -100,6 +104,7 @@ async function initEditor(){
     mode = "edit";
     field("f-id").value = charId;
     field("f-id").disabled = true;
+    document.getElementById("rename-btn").style.display = "inline-block";
     document.getElementById("cancel-link").href = `wiki.html?char=${encodeURIComponent(charId)}`;
 
     let char;
@@ -201,6 +206,61 @@ async function save(){
     }
 
     location.href = `wiki.html?char=${encodeURIComponent(data.id)}`;
+}
+
+// Two-step: first click unlocks the field, second click confirms the rename.
+// Server repoints child rows, incoming relations and revision history to the new id.
+async function renameId(){
+    const btn = document.getElementById("rename-btn");
+    const input = field("f-id");
+    if(input.disabled){
+        input.disabled = false;
+        input.focus();
+        btn.textContent = "Onayla";
+        return;
+    }
+
+    const newId = input.value.trim();
+    if(newId === charId){
+        input.disabled = true;
+        btn.textContent = "Id'yi değiştir";
+        return;
+    }
+    if(!/^[a-z0-9-]{2,50}$/.test(newId)){
+        showEditError("Id kebab-case olmalı: küçük harf, rakam ve tire.");
+        return;
+    }
+
+    showEditError("");
+    btn.disabled = true;
+    let res, data;
+    try{
+        res = await fetch(`${API}/api/characters/${encodeURIComponent(charId)}/rename`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...authHeaders() },
+            body: JSON.stringify({ new_id: newId }),
+        });
+        data = await res.json();
+    }catch(e){
+        showEditError("Sunucuya ulaşılamadı.");
+        btn.disabled = false;
+        return;
+    }
+    btn.disabled = false;
+
+    if(!res.ok){
+        showEditError(data.error || "Id değiştirilemedi.");
+        return;
+    }
+
+    charId = data.id;
+    input.disabled = true;
+    btn.textContent = "Id'yi değiştir";
+    history.replaceState(null, "", `duzenle.html?char=${encodeURIComponent(charId)}`);
+    document.getElementById("cancel-link").href = `wiki.html?char=${encodeURIComponent(charId)}`;
+    const note = document.getElementById("rev-note");
+    note.textContent = `Id "${charId}" oldu. Bağlantılar ve geçmiş otomatik taşındı; görsel dosyası varsa /files/images/characters/${charId}.png olarak elle yeniden adlandır (Görsel yolu alanını da güncelle).`;
+    note.style.display = "block";
 }
 
 async function deleteCharacter(){

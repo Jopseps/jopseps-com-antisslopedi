@@ -33,7 +33,7 @@ async function loadHistory(){
         row.className = "rev-row";
         const current = i === 0 ? ` <span class="wiki-badge">güncel</span>` : "";
         row.innerHTML = `
-            <span class="straightText">#${rev.id}${current} — ${escHtml(rev.username || "?")} — ${escHtml(rev.created_at)} (UTC)</span>
+            <span class="straightText">#${rev.id}${current} — ${rev.username ? `<a href="kullanici.html?u=${encodeURIComponent(rev.username)}" style="text-decoration:underline;">${escHtml(rev.username)}</a>` : "?"} — ${escHtml(rev.created_at)} (UTC)</span>
             <span class="rev-row-actions">
                 <a href="#" onclick="showRevision(${rev.id}); return false;">Görüntüle</a>
                 <a href="duzenle.html?char=${encodeURIComponent(historyCharId)}&rev=${rev.id}">Düzenleyicide aç</a>

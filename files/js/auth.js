@@ -53,6 +53,11 @@ function authHeaders(){
     return t ? { "Authorization": "Bearer " + t } : {};
 }
 
+function canEditRole(){
+    const u = getUserInfo();
+    return !!getToken() && !!u && (u.role === "admin" || u.role === "editor");
+}
+
 async function logout(){
     try{ await fetch(API + "/api/auth/logout", { method: "POST", headers: authHeaders() }); }catch(e){}
     clearSession();
@@ -64,7 +69,10 @@ function renderAuthStrip(){
     if(!el) return;
     const user = getUserInfo();
     if(getToken() && user){
-        el.innerHTML = `<span class="straightText">${escHtml(user.username)}</span><a href="#" onclick="logout();return false;">çıkış</a>`;
+        let html = `<a href="kullanici.html?u=${encodeURIComponent(user.username)}">${escHtml(user.username)}</a>`;
+        if(user.role === "admin") html += `<a href="yonetim.html">yönetim</a>`;
+        html += `<a href="#" onclick="logout();return false;">çıkış</a>`;
+        el.innerHTML = html;
     }else{
         el.innerHTML = `<a href="giris.html">giriş yap</a>`;
     }
