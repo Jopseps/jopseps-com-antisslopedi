@@ -4,6 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="styles.css">
+        <link rel="icon" href="files/images/favicon.svg" type="image/svg+xml">
+        <meta name="description" content="Tıss evreninin resmi ansiklopedisi.">
+        <meta name="theme-color" content="#1e1e1e">
+        <meta property="og:site_name" content="Antısslopedi">
+        <meta property="og:title" content="Geçmiş — Antısslopedi">
+        <meta property="og:description" content="Tıss evreninin resmi ansiklopedisi.">
+        <meta property="og:type" content="website">
         <title>Geçmiş — Antısslopedi</title>
     </head>
     <body class="background">
@@ -24,6 +31,11 @@
                 </div>
 
                 <h1 class="straightText" id="history-title" style="text-align:center; font-size:180%; margin-top:10px;">Geçmiş</h1>
+
+                <div class="compare-bar" id="compare-bar" style="display:none;">
+                    <span class="straightText" style="font-size:85%; opacity:0.75;">sol: eski · sağ: yeni</span>
+                    <button class="form-btn" type="button" onclick="compareRevisions()">Karşılaştır</button>
+                </div>
 
                 <div class="rev-list" id="rev-list">
                     <p class="straightText">yükleniyor...</p>
