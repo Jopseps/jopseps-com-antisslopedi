@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Düzenle — Antisslopedi</title>
+    </head>
+    <body class="background">
+        <div class="site-wrapper">
+            <header class="site-header">
+                <div class="site-header-left">
+                    <a href="index.html" class="site-header-title">Antisslopedi</a>
+                    <a href="karakterler.html" class="site-header-link">Karakterler</a>
+                </div>
+                <div class="site-header-right">
+                    <span id="auth-strip" class="auth-strip"></span>
+                    <button id="darkModeButton" onclick="switchColorScheme()" aria-label="Tema değiştir">🌙</button>
+                </div>
+            </header>
+            <main class="site-content">
+                <div class="edit-card">
+                    <h1 class="straightText" id="edit-title" style="font-size:180%;">Düzenle</h1>
+                    <p class="straightText" id="rev-note" style="font-size:90%; opacity:0.85; display:none;"></p>
+
+                    <div class="edit-field">
+                        <label class="straightText" for="f-id">Id (kebab-case, örn. remi-remi)</label>
+                        <input id="f-id" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-name">Ad *</label>
+                        <input id="f-name" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-full-name">Tam Ad</label>
+                        <input id="f-full-name" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-summary">Özet (ana sayfa kartı için tek cümle)</label>
+                        <input id="f-summary" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-description">Açıklama</label>
+                        <textarea id="f-description" class="form-input" rows="8"></textarea>
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-image">Görsel yolu (örn. /files/images/characters/remi-remi.png)</label>
+                        <input id="f-image" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-first-appearance">İlk Görünüş</label>
+                        <input id="f-first-appearance" class="form-input">
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText"><input type="checkbox" id="f-featured"> Öne çıkan (ana sayfada göster)</label>
+                    </div>
+
+                    <div class="edit-field">
+                        <label class="straightText">Özellikler</label>
+                        <div class="edit-list" id="list-features"></div>
+                        <button class="form-btn" type="button" onclick="addRow('features')">+ Ekle</button>
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText">Varyasyonlar</label>
+                        <div class="edit-list" id="list-variants"></div>
+                        <button class="form-btn" type="button" onclick="addRow('variants')">+ Ekle</button>
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText">Kategoriler</label>
+                        <div class="edit-list" id="list-categories"></div>
+                        <button class="form-btn" type="button" onclick="addRow('categories')">+ Ekle</button>
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText">İlişkiler (id boş kalabilir — sayfası olmayan karakterler düz metin olur)</label>
+                        <div class="edit-list" id="list-relations"></div>
+                        <button class="form-btn" type="button" onclick="addRelationRow()">+ Ekle</button>
+                    </div>
+
+                    <div class="form-error" id="edit-error"></div>
+
+                    <div class="edit-actions">
+                        <button class="form-btn" type="button" onclick="save()" id="save-btn">Kaydet</button>
+                        <a href="index.html" id="cancel-link" class="straightText" style="text-decoration:underline;">İptal</a>
+                        <button class="form-btn danger" type="button" onclick="deleteCharacter()" id="delete-btn" style="display:none; margin-left:auto;">Sil</button>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="site-footer">
+                <div class="footer-content" id="footer">
+                    <div class="footer-section">
+                        <h4>Antisslopedi</h4>
+                        <p>Tıss evreninin gayri resmi ansiklopedisi.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Bağlantılar</h4>
+                        <ul>
+                            <li><a href="index.html">Ana Sayfa</a></li>
+                            <li><a href="karakterler.html">Karakterler</a></li>
+                            <li><a href="https://jopseps.com">jopseps.com</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    © 2025 Jopseps. All rights reserved.
+                </div>
+            </footer>
+        </div>
+
+        <script src="files/js/features.js"></script>
+        <script src="files/js/auth.js"></script>
+        <script src="files/js/duzenle.js"></script>
+    </body>
+</html>

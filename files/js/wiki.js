@@ -1,6 +1,4 @@
-const API = location.hostname === "localhost" || location.hostname === "127.0.0.1"
-    ? "http://localhost:8787"
-    : "https://antisslopedi-server.yusufmertturan.workers.dev";
+// API, escHtml, initials come from auth.js (loaded first)
 
 async function loadCharacter(){
     const id = new URLSearchParams(location.search).get("char");
@@ -25,12 +23,18 @@ async function loadCharacter(){
 
     renderArticle(char);
     renderInfobox(char);
+    renderActions(id);
     buildTOC();
-    applyColorScheme();
 }
 
-function initials(name){
-    return name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toUpperCase();
+function renderActions(id){
+    const el = document.getElementById("wiki-actions");
+    if(!el) return;
+    let html = `<a href="gecmis.html?char=${encodeURIComponent(id)}">Geçmiş</a>`;
+    if(getToken()){
+        html = `<a href="duzenle.html?char=${encodeURIComponent(id)}">Düzenle</a>` + html;
+    }
+    el.innerHTML = html;
 }
 
 function renderArticle(char){
@@ -58,7 +62,7 @@ function renderArticle(char){
         html += `<section class="wiki-section"><h2>İlişkiler</h2><ul>`;
         char.relations.forEach(r => {
             if(r.related_id){
-                html += `<li>${escHtml(r.label)}: <a href="wiki.html?char=${encodeURIComponent(r.related_id)}">${escHtml(r.related_id)}</a></li>`;
+                html += `<li>${escHtml(r.label)}: <a href="wiki.html?char=${encodeURIComponent(r.related_id)}">${escHtml(r.related_name || r.related_id)}</a></li>`;
             }else{
                 html += `<li>${escHtml(r.label)}</li>`;
             }
@@ -81,7 +85,7 @@ function renderInfobox(char){
     const body = document.getElementById("infobox-body");
 
     if(char.image){
-        imgWrap.innerHTML = `<img src="${escAttr(char.image)}" alt="${escAttr(char.name)}"/>`;
+        imgWrap.innerHTML = `<img src="${escHtml(char.image)}" alt="${escHtml(char.name)}"/>`;
     }else{
         imgWrap.innerHTML = `<div class="wiki-initials-placeholder">${initials(char.name)}</div>`;
     }
@@ -97,6 +101,14 @@ function renderInfobox(char){
         `<div class="wiki-infobox-row"><span class="key">${escHtml(k)}</span><span class="val">${escHtml(v)}</span></div>`
     ).join("");
 }
+
+function toggleTOC(){
+    document.getElementById("wiki-toc").classList.toggle("open");
+}
+
+document.getElementById("wiki-toc-list").addEventListener("click", () => {
+    document.getElementById("wiki-toc").classList.remove("open");
+});
 
 function buildTOC(){
     const list = document.getElementById("wiki-toc-list");
@@ -117,16 +129,6 @@ function showError(msg){
     document.getElementById("infobox-image").innerHTML = "";
     document.getElementById("infobox-caption").textContent = "";
     document.getElementById("infobox-body").innerHTML = "";
-}
-
-function escHtml(s){
-    if(!s) return "";
-    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-function escAttr(s){
-    if(!s) return "";
-    return String(s).replace(/"/g,"&quot;");
 }
 
 loadCharacter();

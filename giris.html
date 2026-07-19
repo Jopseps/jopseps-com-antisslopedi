@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Giriş — Antisslopedi</title>
+    </head>
+    <body class="background">
+        <div class="site-wrapper">
+            <header class="site-header">
+                <div class="site-header-left">
+                    <a href="index.html" class="site-header-title">Antisslopedi</a>
+                    <a href="karakterler.html" class="site-header-link">Karakterler</a>
+                </div>
+                <div class="site-header-right">
+                    <button id="darkModeButton" onclick="switchColorScheme()" aria-label="Tema değiştir">🌙</button>
+                </div>
+            </header>
+            <main class="site-content">
+                <form class="form-card" onsubmit="doLogin(); return false;">
+                    <h2 class="straightText">Giriş Yap</h2>
+                    <input id="login-username" class="form-input" placeholder="Kullanıcı adı" autocomplete="username" required>
+                    <input id="login-password" class="form-input" type="password" placeholder="Şifre" autocomplete="current-password" required>
+                    <div class="form-error" id="login-error"></div>
+                    <button class="form-btn" type="submit">Giriş Yap</button>
+                </form>
+
+                <form class="form-card" onsubmit="doRegister(); return false;">
+                    <h2 class="straightText">Kayıt Ol</h2>
+                    <p class="straightText" style="font-size:90%; opacity:0.85;">Kayıt için davet kodu gerekli.</p>
+                    <input id="reg-username" class="form-input" placeholder="Kullanıcı adı" autocomplete="username" required>
+                    <input id="reg-password" class="form-input" type="password" placeholder="Şifre (en az 8 karakter)" autocomplete="new-password" required>
+                    <input id="reg-invite" class="form-input" placeholder="Davet kodu" required>
+                    <div class="form-error" id="reg-error"></div>
+                    <button class="form-btn" type="submit">Kayıt Ol</button>
+                </form>
+            </main>
+
+            <footer class="site-footer">
+                <div class="footer-content" id="footer">
+                    <div class="footer-section">
+                        <h4>Antisslopedi</h4>
+                        <p>Tıss evreninin gayri resmi ansiklopedisi.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Bağlantılar</h4>
+                        <ul>
+                            <li><a href="index.html">Ana Sayfa</a></li>
+                            <li><a href="karakterler.html">Karakterler</a></li>
+                            <li><a href="https://jopseps.com">jopseps.com</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    © 2025 Jopseps. All rights reserved.
+                </div>
+            </footer>
+        </div>
+
+        <script src="files/js/features.js"></script>
+        <script src="files/js/auth.js"></script>
+        <script>
+            async function authRequest(pathName, payload, errorElId){
+                const errEl = document.getElementById(errorElId);
+                errEl.textContent = "";
+                let res, data;
+                try{
+                    res = await fetch(`${API}${pathName}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+                    data = await res.json();
+                }catch(e){
+                    errEl.textContent = "Sunucuya ulaşılamadı.";
+                    return;
+                }
+                if(!res.ok){
+                    errEl.textContent = data.error || "Bir şeyler ters gitti.";
+                    return;
+                }
+                setSession(data.token, { username: data.username, role: data.role });
+                location.href = "index.html";
+            }
+
+            function doLogin(){
+                authRequest("/api/auth/login", {
+                    username: document.getElementById("login-username").value,
+                    password: document.getElementById("login-password").value,
+                }, "login-error");
+            }
+
+            function doRegister(){
+                authRequest("/api/auth/register", {
+                    username: document.getElementById("reg-username").value,
+                    password: document.getElementById("reg-password").value,
+                    invite: document.getElementById("reg-invite").value,
+                }, "reg-error");
+            }
+        </script>
+    </body>
+</html>

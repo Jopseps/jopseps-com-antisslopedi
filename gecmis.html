@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="styles.css">
+        <title>Geçmiş — Antisslopedi</title>
+    </head>
+    <body class="background">
+        <div class="site-wrapper">
+            <header class="site-header">
+                <div class="site-header-left">
+                    <a href="index.html" class="site-header-title">Antisslopedi</a>
+                    <a href="karakterler.html" class="site-header-link">Karakterler</a>
+                </div>
+                <div class="site-header-right">
+                    <span id="auth-strip" class="auth-strip"></span>
+                    <button id="darkModeButton" onclick="switchColorScheme()" aria-label="Tema değiştir">🌙</button>
+                </div>
+            </header>
+            <main class="site-content">
+                <div class="interactiveText-wrapper" style="justify-content:flex-start; padding-left:5%; padding-top:15px;">
+                    <a href="index.html" id="back-link"><h3 class="interactiveText" style="text-align:left; font-weight:700; font-size:100%;">← Karakter sayfası</h3></a>
+                </div>
+
+                <h1 class="straightText" id="history-title" style="text-align:center; font-size:180%; margin-top:10px;">Geçmiş</h1>
+
+                <div class="rev-list" id="rev-list">
+                    <p class="straightText">yükleniyor...</p>
+                </div>
+
+                <div class="rev-preview" id="rev-preview" style="display:none;"></div>
+            </main>
+
+            <footer class="site-footer">
+                <div class="footer-content" id="footer">
+                    <div class="footer-section">
+                        <h4>Antisslopedi</h4>
+                        <p>Tıss evreninin gayri resmi ansiklopedisi.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Bağlantılar</h4>
+                        <ul>
+                            <li><a href="index.html">Ana Sayfa</a></li>
+                            <li><a href="karakterler.html">Karakterler</a></li>
+                            <li><a href="https://jopseps.com">jopseps.com</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    © 2025 Jopseps. All rights reserved.
+                </div>
+            </footer>
+        </div>
+
+        <script src="files/js/features.js"></script>
+        <script src="files/js/auth.js"></script>
+        <script src="files/js/gecmis.js"></script>
+    </body>
+</html>

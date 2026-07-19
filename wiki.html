@@ -7,34 +7,37 @@
         <title>Antisslopedi</title>
     </head>
     <body class="background">
-        <div class="topNavigation"></div>
-
         <div class="site-wrapper">
+            <header class="site-header">
+                <a href="index.html" class="site-header-title">Antisslopedi</a>
+                <div class="site-header-right">
+                    <span id="auth-strip" class="auth-strip"></span>
+                    <button id="darkModeButton" onclick="switchColorScheme()" aria-label="Tema değiştir">🌙</button>
+                </div>
+            </header>
             <main class="site-content">
-                <div class="container-right">
-                    <button id="darkModeButton" onclick="switchColorScheme()">dark mode</button>
-                </div>
-
-                <div class="interactiveText-wrapper" style="justify-content:flex-start; padding-left:10%; padding-top:15px;">
-                    <a href="index.html"><h3 class="interactiveText" style="text-align:left; font-weight:900;">← Antisslopedi</h3></a>
-                </div>
-
                 <section class="wiki-grid">
                     <nav class="wiki-toc" id="wiki-toc" aria-label="İçindekiler">
-                        <div class="wiki-toc-title">İçindekiler</div>
+                        <button class="wiki-toc-title" type="button" onclick="toggleTOC()">İçindekiler</button>
                         <ol id="wiki-toc-list"></ol>
                     </nav>
 
                     <article class="wiki-article" id="article">
                         <header class="wiki-lead">
-                            <h1 class="wiki-title" id="wiki-title">yükleniyor...</h1>
+                            <div class="wiki-actions" id="wiki-actions"></div>
+                            <h1 class="wiki-title" id="wiki-title"><span class="wiki-skeleton title" style="display:block;"></span></h1>
                             <p class="wiki-summary" id="wiki-summary"></p>
                         </header>
-                        <div id="wiki-sections"></div>
+                        <div id="wiki-sections">
+                            <div class="wiki-skeleton wide"></div>
+                            <div class="wiki-skeleton mid"></div>
+                            <div class="wiki-skeleton wide"></div>
+                            <div class="wiki-skeleton short"></div>
+                        </div>
                     </article>
 
                     <aside class="wiki-infobox" aria-label="Bilgi kutusu">
-                        <figure class="wiki-infobox-image" id="infobox-image"></figure>
+                        <figure class="wiki-infobox-image" id="infobox-image"><div class="wiki-skeleton portrait"></div></figure>
                         <figcaption id="infobox-caption" style="text-align:center; margin-top:6px; font-size:90%; opacity:0.9;"></figcaption>
                         <div class="wiki-infobox-body" id="infobox-body"></div>
                     </aside>
@@ -62,6 +65,7 @@
         </div>
 
         <script src="files/js/features.js"></script>
+        <script src="files/js/auth.js"></script>
         <script src="files/js/wiki.js"></script>
     </body>
 </html>

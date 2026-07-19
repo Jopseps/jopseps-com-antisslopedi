@@ -7,16 +7,18 @@
         <title>Antisslopedi</title>
     </head>
     <body class="background">
-        <div class="topNavigation"></div>
-
         <div class="site-wrapper">
-            <main class="site-content">
-                <div class="container-right">
-                    <button id="darkModeButton" onclick="switchColorScheme()">dark mode</button>
+            <header class="site-header">
+                <a href="index.html" class="site-header-title">Antisslopedi</a>
+                <div class="site-header-right">
+                    <span id="auth-strip" class="auth-strip"></span>
+                    <button id="darkModeButton" onclick="switchColorScheme()" aria-label="Tema değiştir">🌙</button>
                 </div>
-
-                <h1 class="straightText" style="text-align:center; font-size:300%;">Antisslopedi</h1>
-                <p class="straightText" style="text-align:center; font-size:110%; opacity:0.9;">Tıss evreninin ansiklopedisi</p>
+            </header>
+            <main class="site-content">
+                <h1 class="straightText hero-title">Antisslopedi</h1>
+                <p class="straightText hero-sub">Tıss evreninin ansiklopedisi</p>
+                <div class="container" id="new-char-slot" style="margin-top:8px;"></div>
 
                 <div id="char-grid" class="projects-grid" style="margin-top:30px;">
                     <p class="straightText" id="loading-msg" style="font-size:large;">yükleniyor...</p>
@@ -43,13 +45,11 @@
         </div>
 
         <script src="files/js/features.js"></script>
+        <script src="files/js/auth.js"></script>
         <script>
-            const API = location.hostname === "localhost"
-                ? "http://localhost:8787"
-                : "https://antisslopedi-server.yusufmertturan.workers.dev";
-
-            function initials(name){
-                return name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0,2).toUpperCase();
+            if(getToken()){
+                document.getElementById("new-char-slot").innerHTML =
+                    `<a href="duzenle.html?new=1"><span class="interactiveText straightText" style="font-weight:700;">+ Yeni Karakter</span></a>`;
             }
 
             async function loadGrid(){
@@ -68,8 +68,8 @@
 
                 chars.forEach(char => {
                     const imgHtml = char.image
-                        ? `<img src="${char.image}" alt="${char.name}">`
-                        : `<div class="char-card-placeholder">${initials(char.name)}</div>`;
+                        ? `<img src="${escHtml(char.image)}" alt="${escHtml(char.name)}">`
+                        : `<div class="char-card-placeholder">${escHtml(initials(char.name))}</div>`;
 
                     const card = document.createElement("a");
                     card.href = `wiki.html?char=${encodeURIComponent(char.id)}`;
@@ -77,14 +77,12 @@
                     card.innerHTML = `
                         <div class="char-card-img">${imgHtml}</div>
                         <div class="char-card-info">
-                            <h3>${char.name}</h3>
-                            <p class="char-card-summary">${char.summary || ""}</p>
+                            <h3>${escHtml(char.name)}</h3>
+                            <p class="char-card-summary">${escHtml(char.summary || "")}</p>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
-
-                applyColorScheme();
             }
 
             loadGrid();
