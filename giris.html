@@ -28,10 +28,11 @@
 
                 <form class="form-card" onsubmit="doRegister(); return false;">
                     <h2 class="straightText">Kayıt Ol</h2>
-                    <p class="straightText" style="font-size:90%; opacity:0.85;">Kayıt için davet kodu gerekli.</p>
+                    <p class="straightText" style="font-size:90%; opacity:0.85;">Davet kodu olmadan hesap salt okunur olur; düzenleme için davet kodu gir veya sonradan admin'den editörlük iste.</p>
                     <input id="reg-username" class="form-input" placeholder="Kullanıcı adı" autocomplete="username" required>
                     <input id="reg-password" class="form-input" type="password" placeholder="Şifre (en az 8 karakter)" autocomplete="new-password" required>
-                    <input id="reg-invite" class="form-input" placeholder="Davet kodu" required>
+                    <input id="reg-invite" class="form-input" placeholder="Davet kodu (opsiyonel)">
+                    <div id="turnstile-slot"></div>
                     <div class="form-error" id="reg-error"></div>
                     <button class="form-btn" type="submit">Kayıt Ol</button>
                 </form>
@@ -53,7 +54,7 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    © 2025 Jopseps. All rights reserved.
+                    © 2026 Jopseps. All rights reserved.
                 </div>
             </footer>
         </div>
@@ -61,6 +62,19 @@
         <script src="files/js/features.js"></script>
         <script src="files/js/auth.js"></script>
         <script>
+            // Cloudflare Turnstile: paste your sitekey here (dashboard → Turnstile → widget).
+            // Empty = widget off; Worker also skips verification until TURNSTILE_SECRET is set.
+            const TURNSTILE_SITEKEY = "";
+
+            if(TURNSTILE_SITEKEY){
+                document.getElementById("turnstile-slot").innerHTML =
+                    `<div class="cf-turnstile" data-sitekey="${TURNSTILE_SITEKEY}"></div>`;
+                const s = document.createElement("script");
+                s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+                s.async = true;
+                document.head.appendChild(s);
+            }
+
             async function authRequest(pathName, payload, errorElId){
                 const errEl = document.getElementById(errorElId);
                 errEl.textContent = "";
@@ -92,11 +106,15 @@
             }
 
             function doRegister(){
-                authRequest("/api/auth/register", {
+                const payload = {
                     username: document.getElementById("reg-username").value,
                     password: document.getElementById("reg-password").value,
                     invite: document.getElementById("reg-invite").value,
-                }, "reg-error");
+                };
+                if(TURNSTILE_SITEKEY && window.turnstile){
+                    payload.turnstile = turnstile.getResponse() || "";
+                }
+                authRequest("/api/auth/register", payload, "reg-error");
             }
         </script>
     </body>

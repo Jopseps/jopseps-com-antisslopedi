@@ -21,6 +21,7 @@
             <main class="site-content">
                 <h1 class="straightText hero-title">Antisslopedi</h1>
                 <p class="straightText hero-sub">Tıss evreninin ansiklopedisi</p>
+                <p class="straightText hero-desc">Tıss evreni; birbirinden tuhaf tısların, kayıp ikizlerin ve açıklanamayan olayların dünyasıdır. Antisslopedi bu evrenin gayri resmi kayıt defteri — karakterleri keşfet, hikâyeleri oku, eksik gördüğünü ekle.</p>
                 <div class="container" id="new-char-slot" style="margin-top:8px;"></div>
 
                 <h2 class="straightText section-title">Öne Çıkanlar</h2>
@@ -28,8 +29,14 @@
                     <p class="straightText" id="loading-msg" style="font-size:large;">yükleniyor...</p>
                 </div>
 
-                <div class="container" style="margin:26px 0 40px;">
+                <div class="container" style="margin:26px 0 10px; gap:14px;">
                     <a href="karakterler.html" class="big-link-btn">Tüm Karakterler →</a>
+                    <a href="#" class="big-link-btn" onclick="randomChar();return false;">🎲 Rastgele</a>
+                </div>
+
+                <div class="changes-box" id="changes-box" style="display:none;">
+                    <div class="changes-title">son değişiklikler</div>
+                    <ul id="changes-list"></ul>
                 </div>
             </main>
 
@@ -48,7 +55,7 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    © 2025 Jopseps. All rights reserved.
+                    © 2026 Jopseps. All rights reserved.
                 </div>
             </footer>
         </div>
@@ -56,31 +63,68 @@
         <script src="files/js/features.js"></script>
         <script src="files/js/auth.js"></script>
         <script>
-            if(getToken()){
+            if(canEditRole()){
                 document.getElementById("new-char-slot").innerHTML =
                     `<a href="duzenle.html?new=1"><span class="interactiveText straightText" style="font-weight:700;">+ Yeni Karakter</span></a>`;
             }
 
+            let allChars = [];
+
             async function loadFeatured(){
-                let chars;
                 try{
                     const res = await fetch(`${API}/api/characters`);
                     if(!res.ok) throw new Error(res.status);
-                    chars = await res.json();
+                    allChars = await res.json();
                 }catch(e){
                     document.getElementById("loading-msg").textContent = "Yüklenemedi.";
                     return;
                 }
 
-                let featured = chars.filter(c => c.featured);
-                if(!featured.length) featured = chars;
+                let featured = allChars.filter(c => c.featured);
+                if(!featured.length) featured = allChars;
 
                 const grid = document.getElementById("featured-grid");
                 grid.innerHTML = "";
                 featured.forEach(char => grid.appendChild(charCard(char)));
             }
 
+            function randomChar(){
+                if(!allChars.length) return;
+                const pick = allChars[Math.floor(Math.random() * allChars.length)];
+                location.href = `wiki.html?char=${encodeURIComponent(pick.id)}`;
+            }
+
+            function timeAgo(iso){
+                const s = (Date.now() - new Date(iso.replace(" ", "T") + "Z").getTime()) / 1000;
+                if(s < 3600) return Math.max(1, Math.floor(s / 60)) + " dk önce";
+                if(s < 86400) return Math.floor(s / 3600) + " sa önce";
+                return Math.floor(s / 86400) + " gün önce";
+            }
+
+            async function loadChanges(){
+                let changes;
+                try{
+                    const res = await fetch(`${API}/api/changes`);
+                    if(!res.ok) throw new Error(res.status);
+                    changes = await res.json();
+                }catch(e){ return; }
+                if(!changes.length) return;
+
+                const list = document.getElementById("changes-list");
+                list.innerHTML = changes.map(c => {
+                    const name = c.deleted
+                        ? `<span>${escHtml(c.char_name)}</span>`
+                        : `<a href="wiki.html?char=${encodeURIComponent(c.char_id)}">${escHtml(c.char_name)}</a>`;
+                    const who = c.username
+                        ? ` · <a href="kullanici.html?u=${encodeURIComponent(c.username)}">${escHtml(c.username)}</a>`
+                        : "";
+                    return `<li>${name} — ${escHtml(c.summary)}${who} · ${escHtml(timeAgo(c.created_at))}</li>`;
+                }).join("");
+                document.getElementById("changes-box").style.display = "block";
+            }
+
             loadFeatured();
+            loadChanges();
         </script>
     </body>
 </html>
