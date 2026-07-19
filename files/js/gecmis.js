@@ -1,3 +1,5 @@
+// API, escHtml, authHeaders, canEditRole come from auth.js (loaded first)
+
 const historyCharId = new URLSearchParams(location.search).get("char");
 
 async function loadHistory(){
@@ -8,7 +10,7 @@ async function loadHistory(){
     }
 
     document.getElementById("history-title").textContent = "Geçmiş: " + historyCharId;
-    document.title = "Geçmiş: " + historyCharId + " — Antisslopedi";
+    document.title = "Geçmiş: " + historyCharId + " — Antısslopedi";
     const back = document.getElementById("back-link");
     back.href = `wiki.html?char=${encodeURIComponent(historyCharId)}`;
 
@@ -27,20 +29,186 @@ async function loadHistory(){
         return;
     }
 
+    if(revs.length > 1) document.getElementById("compare-bar").style.display = "flex";
+
     list.innerHTML = "";
     revs.forEach((rev, i) => {
         const row = document.createElement("div");
         row.className = "rev-row";
         const current = i === 0 ? ` <span class="wiki-badge">güncel</span>` : "";
+        // defaults: latest as "yeni", the one before as "eski"
+        const radios = revs.length > 1 ? `<span class="rev-radios">
+                <input type="radio" name="diff-old" value="${rev.id}" title="eski" ${i === 1 ? "checked" : ""}>
+                <input type="radio" name="diff-new" value="${rev.id}" title="yeni" ${i === 0 ? "checked" : ""}>
+            </span>` : "";
+        const revert = (i !== 0 && canEditRole())
+            ? `<a href="#" onclick="revertTo(${rev.id});return false;">geri döndür</a>`
+            : "";
         row.innerHTML = `
-            <span class="straightText">#${rev.id}${current} — ${rev.username ? `<a href="kullanici.html?u=${encodeURIComponent(rev.username)}" style="text-decoration:underline;">${escHtml(rev.username)}</a>` : "?"} — ${escHtml(rev.created_at)} (UTC)</span>
+            <span class="straightText">${radios}#${rev.id}${current} — ${rev.username ? `<a href="kullanici.html?u=${encodeURIComponent(rev.username)}" style="text-decoration:underline;">${escHtml(rev.username)}</a>` : "?"} — ${escHtml(rev.created_at)} (UTC)</span>
             <span class="rev-row-actions">
                 <a href="#" onclick="showRevision(${rev.id}); return false;">Görüntüle</a>
+                ${revert}
                 <a href="duzenle.html?char=${encodeURIComponent(historyCharId)}&rev=${rev.id}">Düzenleyicide aç</a>
             </span>
         `;
         list.appendChild(row);
     });
+}
+
+async function fetchRevision(revId){
+    const res = await fetch(`${API}/api/revisions/${revId}`);
+    if(!res.ok) throw new Error(res.status);
+    return await res.json();
+}
+
+// --- git-style compare ---
+
+function lcsDiff(aw, bw){
+    const m = aw.length, n = bw.length;
+    if(m * n > 300000) return null;
+    const dp = [];
+    for(let i = 0; i <= m; i++) dp.push(new Int32Array(n + 1));
+    for(let i = m - 1; i >= 0; i--){
+        for(let j = n - 1; j >= 0; j--){
+            dp[i][j] = aw[i] === bw[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+    }
+    const out = [];
+    let i = 0, j = 0;
+    while(i < m && j < n){
+        if(aw[i] === bw[j]){ out.push(["=", aw[i]]); i++; j++; }
+        else if(dp[i + 1][j] >= dp[i][j + 1]){ out.push(["-", aw[i]]); i++; }
+        else{ out.push(["+", bw[j]]); j++; }
+    }
+    while(i < m) out.push(["-", aw[i++]]);
+    while(j < n) out.push(["+", bw[j++]]);
+    return out;
+}
+
+function diffTextHtml(a, b){
+    const aw = String(a || "").split(/\s+/).filter(Boolean);
+    const bw = String(b || "").split(/\s+/).filter(Boolean);
+    const ops = lcsDiff(aw, bw);
+    if(!ops){
+        return `<div class="diff-del">${escHtml(a || "—")}</div><div class="diff-add">${escHtml(b || "—")}</div>`;
+    }
+    return ops.map(([t, w]) =>
+        t === "=" ? escHtml(w) : `<span class="${t === "-" ? "diff-del" : "diff-add"}">${escHtml(w)}</span>`
+    ).join(" ");
+}
+
+function diffListHtml(a, b){
+    a = a || []; b = b || [];
+    const kept = b.filter(x => a.includes(x));
+    const removed = a.filter(x => !b.includes(x));
+    const added = b.filter(x => !a.includes(x));
+    return [
+        ...kept.map(x => `<span class="wiki-badge">${escHtml(x)}</span>`),
+        ...removed.map(x => `<span class="wiki-badge diff-del">${escHtml(x)}</span>`),
+        ...added.map(x => `<span class="wiki-badge diff-add">${escHtml(x)}</span>`),
+    ].join(" ");
+}
+
+function relStrings(rels){
+    return (rels || []).map(r => r.label + (r.related_id ? ` (${r.related_id})` : ""));
+}
+
+async function compareRevisions(){
+    const oldEl = document.querySelector('input[name="diff-old"]:checked');
+    const newEl = document.querySelector('input[name="diff-new"]:checked');
+    const box = document.getElementById("rev-preview");
+    if(!oldEl || !newEl || oldEl.value === newEl.value){
+        box.style.display = "block";
+        box.innerHTML = `<p class="straightText">Karşılaştırmak için iki farklı sürüm seç.</p>`;
+        return;
+    }
+    // lower id = old side, regardless of which column was picked
+    let [oldId, newId] = [parseInt(oldEl.value, 10), parseInt(newEl.value, 10)];
+    if(oldId > newId) [oldId, newId] = [newId, oldId];
+
+    box.style.display = "block";
+    box.innerHTML = `<p class="straightText">yükleniyor...</p>`;
+    let oldRev, newRev;
+    try{
+        [oldRev, newRev] = await Promise.all([fetchRevision(oldId), fetchRevision(newId)]);
+    }catch(e){
+        box.innerHTML = `<p class="straightText">Sürümler yüklenemedi.</p>`;
+        return;
+    }
+
+    const a = oldRev.data, b = newRev.data;
+    const fields = [
+        ["name", "Ad", "text"],
+        ["full_name", "Tam Ad", "text"],
+        ["summary", "Özet", "text"],
+        ["description", "Açıklama", "text"],
+        ["image", "Görsel", "text"],
+        ["first_appearance", "İlk Görünüş", "text"],
+        ["featured", "Öne çıkan", "bool"],
+        ["features", "Özellikler", "list"],
+        ["variants", "Varyasyonlar", "list"],
+        ["categories", "Kategoriler", "list"],
+        ["relations", "İlişkiler", "rel"],
+    ];
+
+    let html = `<h2 class="straightText">#${oldRev.id} → #${newRev.id}</h2>
+        <p class="straightText" style="font-size:85%; opacity:0.7;">${escHtml(oldRev.username || "?")} (${escHtml(oldRev.created_at)}) → ${escHtml(newRev.username || "?")} (${escHtml(newRev.created_at)})</p>`;
+    let changes = 0;
+
+    for(const [key, label, kind] of fields){
+        const av = kind === "rel" ? relStrings(a[key]) : a[key];
+        const bv = kind === "rel" ? relStrings(b[key]) : b[key];
+        if(JSON.stringify(av ?? null) === JSON.stringify(bv ?? null)) continue;
+        changes++;
+        let body;
+        if(kind === "bool"){
+            body = `<span class="diff-del">${a[key] ? "evet" : "hayır"}</span> → <span class="diff-add">${b[key] ? "evet" : "hayır"}</span>`;
+        }else if(kind === "list" || kind === "rel"){
+            body = diffListHtml(av, bv);
+        }else{
+            body = diffTextHtml(av, bv);
+        }
+        html += `<div class="diff-field"><div class="diff-field-title">${label}</div><div class="straightText diff-body">${body}</div></div>`;
+    }
+
+    if(!changes) html += `<p class="straightText">İki sürüm arasında fark yok.</p>`;
+    box.innerHTML = html;
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+// --- one-click revert: old snapshot saved forward as a new revision ---
+
+async function revertTo(revId){
+    if(!confirm(`#${revId} sürümüne geri döndürülsün mü? (Eski içerik yeni sürüm olarak kaydedilir.)`)) return;
+    let rev, cur;
+    try{
+        rev = await fetchRevision(revId);
+        const res = await fetch(`${API}/api/characters/${encodeURIComponent(historyCharId)}`);
+        if(!res.ok) throw new Error(res.status);
+        cur = await res.json();
+    }catch(e){
+        alert("Sürüm yüklenemedi (karakter silinmiş olabilir — admin panelinden geri yükle).");
+        return;
+    }
+
+    let res, data;
+    try{
+        res = await fetch(`${API}/api/characters/${encodeURIComponent(historyCharId)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", ...authHeaders() },
+            body: JSON.stringify({ ...rev.data, base_revision: cur.revision }),
+        });
+        data = await res.json();
+    }catch(e){
+        alert("Sunucuya ulaşılamadı.");
+        return;
+    }
+    if(!res.ok){
+        alert(data.message || data.error || "Geri döndürülemedi.");
+        return;
+    }
+    location.reload();
 }
 
 async function showRevision(revId){
@@ -50,9 +218,7 @@ async function showRevision(revId){
 
     let rev;
     try{
-        const res = await fetch(`${API}/api/revisions/${revId}`);
-        if(!res.ok) throw new Error(res.status);
-        rev = await res.json();
+        rev = await fetchRevision(revId);
     }catch(e){
         box.innerHTML = `<p class="straightText">Sürüm yüklenemedi.</p>`;
         return;
@@ -70,9 +236,7 @@ async function showRevision(revId){
     html += listBlock("Özellikler", d.features);
     html += listBlock("Varyasyonlar", d.variants);
     html += listBlock("Kategoriler", d.categories);
-    if(d.relations && d.relations.length){
-        html += `<p class="straightText"><b>İlişkiler:</b> ${d.relations.map(r => escHtml(r.label + (r.related_id ? " (" + r.related_id + ")" : ""))).join(", ")}</p>`;
-    }
+    html += listBlock("İlişkiler", relStrings(d.relations));
     box.innerHTML = html;
     box.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
