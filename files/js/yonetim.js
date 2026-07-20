@@ -7,7 +7,7 @@ function showAdminError(msg){
 }
 
 function showTab(name){
-    ["stats", "users", "featured", "archive", "settings"].forEach(t => {
+    ["stats", "users", "featured", "history", "archive", "settings"].forEach(t => {
         document.getElementById("tab-" + t).style.display = t === name ? "block" : "none";
         document.getElementById("tabbtn-" + t).classList.toggle("active", t === name);
     });
@@ -43,13 +43,17 @@ async function loadStats(){
     ).join("");
 }
 
+let adminUsers = [];      // geçmiş filtresi datalist'i de bunu kullanıyor
+
 async function loadUsers(){
     const users = await adminFetch("/api/admin/users");
+    adminUsers = users;
     const me = getUserInfo();
     document.getElementById("user-list").innerHTML = users.map(u => {
         const enc = encodeURIComponent(u.username);
         const name = `<a href="kullanici.html?u=${enc}"><b>${escHtml(u.username)}</b></a>`;
         const badges = `<span class="role-badge ${u.role}">${ROLE_LABELS[u.role] || escHtml(u.role)}</span>`
+            + ` <span class="point-badge">${u.points || 0} puan</span>`
             + (u.disabled ? ` <span class="role-badge banned">dondurulmuş</span>` : "");
 
         let actions = "";
@@ -62,6 +66,7 @@ async function loadUsers(){
                 <button class="form-btn" type="button" onclick="setUser('${enc}',{role:'${other}'})">${roleLabel}</button>
                 <button class="form-btn" type="button" onclick="setUser('${enc}',{disabled:${u.disabled ? "false" : "true"}})">${u.disabled ? "dondurmayı kaldır" : "dondur"}</button>
                 <button class="form-btn" type="button" onclick="setUser('${enc}',{force_logout:true})">oturumları kapat</button>
+                <button class="form-btn" type="button" onclick="editPoints('${enc}',${u.points || 0})">puan</button>
                 <button class="form-btn" type="button" onclick="resetPassword('${enc}')">şifre sıfırla</button>
                 <button class="form-btn danger" type="button" onclick="deleteUser('${enc}')">sil</button>`;
         }
@@ -69,6 +74,108 @@ async function loadUsers(){
         return `<div class="rev-row"><span class="straightText">${name} ${badges} · ${escHtml((u.created_at || "").slice(0, 10))}</span>
             <div class="rev-row-actions">${actions}</div></div>`;
     }).join("");
+}
+
+// --- geçmiş sekmesi ---
+
+let histPage = 1;
+let histPer = 10;
+let histUser = "";
+let histChar = "";
+
+function histQuery(){
+    const q = new URLSearchParams({ page: histPage, per: histPer });
+    if(histUser) q.set("user", histUser);
+    if(histChar) q.set("char", histChar);
+    return q.toString();
+}
+
+async function loadHistory(){
+    const box = document.getElementById("hist-list");
+    let data;
+    try{
+        data = await adminFetch("/api/admin/revisions?" + histQuery());
+    }catch(e){
+        box.innerHTML = `<p class="straightText">Geçmiş yüklenemedi: ${escHtml(e.message)}</p>`;
+        return;
+    }
+    histPage = data.page;
+    if(!data.items.length){
+        box.innerHTML = `<p class="straightText">Kayıt yok.</p>`;
+        renderHistPager(data);
+        return;
+    }
+    box.innerHTML = data.items.map(r => {
+        const encChar = encodeURIComponent(r.char_id);
+        const encUser = encodeURIComponent(r.username || "");
+        const when = escHtml((r.created_at || "").slice(0, 16));
+        const who = r.username
+            ? `<a href="kullanici.html?u=${encUser}">${escHtml(r.username)}</a>`
+            : `<span style="opacity:0.6;">?</span>`;
+        const what = r.deleted
+            ? `<span style="opacity:0.6;">${escHtml(r.char_name)} (silinmiş)</span>`
+            : `<a href="wiki.html?char=${encChar}">${escHtml(r.char_name)}</a>`;
+        return `<div class="rev-row"><span class="straightText">
+                <a href="gecmis.html?char=${encChar}">${when}</a> · ${who} · ${what} · ${escHtml(r.summary)}
+            </span>
+            <div class="rev-row-actions"><span style="opacity:0.6;">#${r.id}</span></div></div>`;
+    }).join("");
+    renderHistPager(data);
+}
+
+// ‹ 1 2 3 4 5 › — en fazla 5 numara, mevcut sayfa ortada kalacak şekilde kayar
+function renderHistPager(data){
+    const pager = document.getElementById("hist-pager");
+    if(data.pages <= 1){
+        pager.innerHTML = `<span class="straightText hist-total">${data.total} kayıt</span>`;
+        return;
+    }
+    const WINDOW = 5;
+    let start = Math.max(1, data.page - Math.floor(WINDOW / 2));
+    let end = Math.min(data.pages, start + WINDOW - 1);
+    start = Math.max(1, end - WINDOW + 1);
+
+    let html = `<button class="page-btn" type="button" ${data.page <= 1 ? "disabled" : ""} onclick="gotoHistPage(${data.page - 1})">‹</button>`;
+    if(start > 1) html += `<span class="page-gap">…</span>`;
+    for(let i = start; i <= end; i++){
+        html += `<button class="page-btn${i === data.page ? " active" : ""}" type="button" onclick="gotoHistPage(${i})">${i}</button>`;
+    }
+    if(end < data.pages) html += `<span class="page-gap">…</span>`;
+    html += `<button class="page-btn" type="button" ${data.page >= data.pages ? "disabled" : ""} onclick="gotoHistPage(${data.page + 1})">›</button>`;
+    html += `<span class="straightText hist-total">${data.total} kayıt</span>`;
+    pager.innerHTML = html;
+}
+
+function gotoHistPage(n){
+    histPage = n;
+    loadHistory();
+}
+
+function changeHistPer(){
+    histPer = parseInt(document.getElementById("hist-per").value, 10) || 10;
+    histPage = 1;
+    loadHistory();
+}
+
+function applyHistFilter(){
+    histUser = document.getElementById("hist-user").value.trim();
+    histChar = document.getElementById("hist-char").value.trim();
+    histPage = 1;
+    loadHistory();
+}
+
+// filtre datalist'leri zaten yüklenmiş kullanıcı/karakter listelerinden beslenir
+function fillHistOptions(){
+    document.getElementById("hist-user-options").innerHTML =
+        adminUsers.map(u => `<option value="${escHtml(u.username)}"></option>`).join("");
+    document.getElementById("hist-char-options").innerHTML =
+        allChars.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join("");
+}
+
+function clearHistFilter(){
+    document.getElementById("hist-user").value = "";
+    document.getElementById("hist-char").value = "";
+    applyHistFilter();
 }
 
 async function setUser(encodedUsername, payload){
@@ -80,6 +187,23 @@ async function setUser(encodedUsername, payload){
     }catch(e){
         showAdminError("İşlem başarısız: " + e.message);
     }
+}
+
+// Mutlak sayı ("120") ya da göreli ("+10" / "-5") kabul eder.
+function editPoints(encodedUsername, current){
+    const username = decodeURIComponent(encodedUsername);
+    const raw = prompt(`${username} — puan (şu an ${current}).\nDüz sayı yazarsan o değere ayarlanır, +10 / -5 yazarsan eklenir/çıkarılır:`, String(current));
+    if(raw === null) return;
+    const v = raw.trim();
+    if(!/^[+-]?\d+$/.test(v)){
+        showAdminError("Puan sayı olmalı (ör. 120, +10, -5).");
+        return;
+    }
+    const reason = prompt("Sebep (deftere yazılır, boş bırakılabilir):", "") || "";
+    const relative = v[0] === "+" || v[0] === "-";
+    const payload = relative ? { points_delta: parseInt(v, 10) } : { points: parseInt(v, 10) };
+    if(reason.trim()) payload.points_reason = reason.trim();
+    setUser(encodedUsername, payload);
 }
 
 function resetPassword(encodedUsername){
@@ -259,7 +383,8 @@ async function initAdmin(){
         return;
     }
     try{
-        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted(), loadFeatured()]);
+        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted(), loadFeatured(), loadHistory()]);
+        fillHistOptions();
     }catch(e){
         showAdminError("Panel yüklenemedi: " + e.message);
     }
