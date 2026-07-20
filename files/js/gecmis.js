@@ -114,6 +114,14 @@ function relStrings(rels){
     return (rels || []).map(r => r.label + (r.related_id ? ` (${r.related_id})` : ""));
 }
 
+// eski snapshot'lar düz string, yenileri {variant_id, variant_name}
+function varStrings(vars){
+    return (vars || []).map(v => {
+        if(typeof v === "string") return v;
+        return (v.variant_name || "") + (v.variant_id ? ` (${v.variant_id})` : "");
+    });
+}
+
 async function compareRevisions(){
     const oldEl = document.querySelector('input[name="diff-old"]:checked');
     const newEl = document.querySelector('input[name="diff-new"]:checked');
@@ -148,7 +156,7 @@ async function compareRevisions(){
         ["featured", "Öne çıkan", "bool"],
         ["featured_order", "Öne çıkan sırası", "text"],
         ["features", "Özellikler", "list"],
-        ["variants", "Varyasyonlar", "list"],
+        ["variants", "Varyasyonlar", "var"],
         ["categories", "Kategoriler", "list"],
         ["relations", "İlişkiler", "rel"],
     ];
@@ -158,14 +166,15 @@ async function compareRevisions(){
     let changes = 0;
 
     for(const [key, label, kind] of fields){
-        const av = kind === "rel" ? relStrings(a[key]) : a[key];
-        const bv = kind === "rel" ? relStrings(b[key]) : b[key];
+        const norm = v => kind === "rel" ? relStrings(v) : (kind === "var" ? varStrings(v) : v);
+        const av = norm(a[key]);
+        const bv = norm(b[key]);
         if(JSON.stringify(av ?? null) === JSON.stringify(bv ?? null)) continue;
         changes++;
         let body;
         if(kind === "bool"){
             body = `<span class="diff-del">${a[key] ? "evet" : "hayır"}</span> → <span class="diff-add">${b[key] ? "evet" : "hayır"}</span>`;
-        }else if(kind === "list" || kind === "rel"){
+        }else if(kind === "list" || kind === "rel" || kind === "var"){
             body = diffListHtml(av, bv);
         }else{
             body = diffTextHtml(av, bv);
@@ -235,7 +244,7 @@ async function showRevision(revId){
         return `<p class="straightText"><b>${title}:</b> ${items.map(escHtml).join(", ")}</p>`;
     };
     html += listBlock("Özellikler", d.features);
-    html += listBlock("Varyasyonlar", d.variants);
+    html += listBlock("Varyasyonlar", varStrings(d.variants));
     html += listBlock("Kategoriler", d.categories);
     html += listBlock("İlişkiler", relStrings(d.relations));
     box.innerHTML = html;

@@ -93,9 +93,15 @@
                         </div>
                     </div>
                     <div class="edit-field">
-                        <label class="straightText">Varyasyonlar</label>
+                        <label class="straightText">Varyasyonlar (ad bir karakterle eşleşirse otomatik link olur)</label>
+                        <datalist id="char-name-options"></datalist>
                         <div class="edit-list" id="list-variants"></div>
-                        <button class="form-btn" type="button" onclick="addRow('variants')">+ Ekle</button>
+                        <button class="form-btn" type="button" id="var-toggle" onclick="toggleVarPicker()">+ Ekle</button>
+                        <div class="cat-picker" id="var-picker" style="display:none;">
+                            <label class="straightText cat-picker-title">Karakterlerden seç (linkli eklenir)</label>
+                            <input id="var-search" class="form-input" placeholder="ara veya yeni varyasyon yaz…" oninput="renderVarChips()">
+                            <div class="cat-chips" id="var-chips"></div>
+                        </div>
                     </div>
                     <div class="edit-field">
                         <label class="straightText">Kategoriler</label>

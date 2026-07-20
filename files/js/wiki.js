@@ -68,7 +68,16 @@ function renderArticle(char){
 
     if(char.variants && char.variants.length){
         html += `<section class="wiki-section"><h2>Varyasyonlar</h2><ul>`;
-        char.variants.forEach(v => { html += `<li>${escHtml(v)}</li>`; });
+        char.variants.forEach(v => {
+            // eski kayıtlar düz string olabilir; yeni şekil {variant_id, variant_name}
+            const name = (typeof v === "string") ? v : (v.variant_name || "");
+            const vid = (typeof v === "string") ? null : v.variant_id;
+            if(vid){
+                html += `<li><a href="wiki.html?char=${encodeURIComponent(vid)}">${escHtml(name)}</a></li>`;
+            }else{
+                html += `<li>${escHtml(name)}</li>`;
+            }
+        });
         html += `</ul></section>`;
     }
 

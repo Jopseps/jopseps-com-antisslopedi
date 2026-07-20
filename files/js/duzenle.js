@@ -274,16 +274,173 @@ async function loadChars(){
         allChars = [];
     }
     const dl = field("char-options");
+    const dlNames = field("char-name-options");
     dl.innerHTML = "";
+    dlNames.innerHTML = "";
     allChars.forEach(c => {
         if(c.id === charId) return;   // karakter kendine ilişki kurmasın
         const opt = document.createElement("option");
         opt.value = c.id;
         opt.textContent = c.name;
         dl.appendChild(opt);
+        // varyasyon alanında görünen metin ad olduğu için ayrı bir ad listesi
+        const nopt = document.createElement("option");
+        nopt.value = c.name;
+        dlNames.appendChild(nopt);
     });
     // liste geç geldiyse mevcut satırların rozetlerini tazele
     [...field("list-relations").querySelectorAll(".edit-row")].forEach(row => row._syncRel && row._syncRel());
+    renderVarChips();   // chip bulutu allChars'tan besleniyor, liste geç gelirse boş kalırdı
+}
+
+// Varyasyon satırı: tek görünür alan (ad). Ad bir karakterle eşleşirse variant_id
+// arka planda tutulur — girilen metnin kendisi asla id'yle değiştirilmez.
+function addVariantRow(variantId, variantName){
+    const row = document.createElement("div");
+    row.className = "edit-row rel-row";
+    const input = document.createElement("input");
+    input.className = "form-input";
+    input.placeholder = "varyasyon adı";
+    input.setAttribute("list", "char-name-options");
+    input.value = variantName || "";
+    row._variantId = variantId || null;
+    const hint = document.createElement("span");
+
+    // render sadece row._variantId'yi gösterir — yükleme kaydedilen id'ye güvenir
+    // (ilişkilerdeki gibi), yoksa "bağı kaldır" bir sonraki açılışta geri bağlanırdı
+    const render = () => {
+        if(!input.value.trim()){
+            hint.className = "rel-hint straightText";
+            hint.textContent = "";
+            hint.title = "";
+            hint.style.cursor = "";
+            hint.onclick = null;
+            return;
+        }
+        const linked = row._variantId;
+        hint.className = "rel-hint straightText " + (linked ? "ok" : "warn");
+        hint.textContent = linked ? linked + " ✕" : "sayfası yok — düz metin";
+        hint.title = linked ? "bağı kaldır" : "";
+        hint.style.cursor = linked ? "pointer" : "";
+        hint.onclick = linked ? () => { row._variantId = null; render(); renderVarChips(); } : null;
+    };
+    // resolve sadece kullanıcı yazarken çalışır: ad → id
+    const resolve = () => {
+        const v = input.value.trim();
+        if(!v){
+            row._variantId = null;
+        }else{
+            const low = v.toLocaleLowerCase("tr");
+            const hit = allChars.find(c => c.id !== charId && (c.id === v || c.name.toLocaleLowerCase("tr") === low));
+            row._variantId = hit ? hit.id : null;
+        }
+        render();
+        renderVarChips();   // chip seçili durumu satırlardan türüyor
+    };
+    input.oninput = resolve;
+    input.onblur = resolve;
+
+    const del = document.createElement("button");
+    del.className = "form-btn";
+    del.type = "button";
+    del.textContent = "sil";
+    del.onclick = () => { row.remove(); renderVarChips(); };
+    row.appendChild(input);
+    row.appendChild(hint);
+    row.appendChild(del);
+    row._syncVar = render;
+    render();
+    field("list-variants").appendChild(row);
+}
+
+// --- varyasyon seçici ---
+// Kategoriler/özellikler chip bulutunun kardeşi ama kaynağı allChars: tıklanan chip
+// linkli bir satır ekler (variant_id dolu). Serbest metin "+ Yeni" ile id'siz eklenir.
+
+function varRows(){
+    return [...field("list-variants").querySelectorAll(".edit-row")];
+}
+
+function toggleVarPicker(){
+    const picker = field("var-picker");
+    const open = picker.style.display !== "none";
+    picker.style.display = open ? "none" : "";
+    field("var-toggle").textContent = open ? "+ Ekle" : "− Kapat";
+    if(!open){
+        renderVarChips();
+        field("var-search").focus();
+    }
+}
+
+function toggleVarChar(c){
+    const hit = varRows().find(row => row._variantId === c.id);
+    if(hit){
+        hit.remove();
+    }else{
+        addVariantRow(c.id, c.name);
+    }
+    renderVarChips();
+}
+
+function addNewVariant(){
+    const value = field("var-search").value.trim();
+    if(!value) return;
+    const n = value.toLocaleLowerCase("tr");
+    const dup = varRows().some(row => row.querySelector("input").value.trim().toLocaleLowerCase("tr") === n);
+    if(!dup) addVariantRow(null, value);
+    field("var-search").value = "";
+    renderVarChips();
+}
+
+function renderVarChips(){
+    const box = field("var-chips");
+    if(!box) return;
+    const raw = field("var-search").value.trim();
+    const q = raw.toLocaleLowerCase("tr");
+    const pool = allChars.filter(c => c.id !== charId);
+    const list = q ? pool.filter(c => c.name.toLocaleLowerCase("tr").includes(q) || c.id.includes(q)) : pool;
+    box.innerHTML = "";
+    list.forEach(c => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (varRows().some(row => row._variantId === c.id) ? " on" : "");
+        chip.onclick = () => toggleVarChar(c);
+        chip.textContent = c.name;
+        box.appendChild(chip);
+    });
+    const exact = q && pool.some(c => c.name.toLocaleLowerCase("tr") === q);
+    if(q && !exact){
+        if(!list.length){
+            const empty = document.createElement("div");
+            empty.className = "cat-empty straightText";
+            empty.textContent = "Eşleşme yok";
+            box.appendChild(empty);
+        }
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "form-btn cat-new-btn";
+        add.textContent = `+ Yeni: «${raw}» ekle`;
+        add.onclick = () => addNewVariant();
+        box.appendChild(add);
+    }
+}
+
+function collectVariants(){
+    const out = [];
+    varRows().forEach(row => {
+        const name = row.querySelector("input").value.trim();
+        if(!name) return;
+        // aynı ad iki kez girilebiliyor (chip ile ekle → bağı kaldır → tekrar chip);
+        // teki kalsın, linkli olan kazansın
+        const key = name.toLocaleLowerCase("tr");
+        const dup = out.find(v => v.variant_name.toLocaleLowerCase("tr") === key);
+        if(dup){
+            if(!dup.variant_id && row._variantId) dup.variant_id = row._variantId;
+            return;
+        }
+        out.push({ variant_id: row._variantId || null, variant_name: name });
+    });
+    return out;
 }
 
 function addRelationRow(relatedId, label){
@@ -368,9 +525,14 @@ function fillForm(d){
     field("list-categories").innerHTML = "";
     field("list-relations").innerHTML = "";
     (d.features || []).forEach(v => addRow("features", v));
-    (d.variants || []).forEach(v => addRow("variants", v));
+    // eski revizyon snapshot'ları düz string dizisi olabilir
+    (d.variants || []).forEach(v => {
+        if(typeof v === "string") addVariantRow(null, v);
+        else addVariantRow(v.variant_id, v.variant_name);
+    });
     (d.categories || []).forEach(v => addRow("categories", v));
     (d.relations || []).forEach(r => addRelationRow(r.related_id, r.label));
+    renderVarChips();
 }
 
 async function initEditor(){
@@ -454,7 +616,7 @@ async function save(){
         featured: field("f-featured").checked ? 1 : 0,
         featured_order: field("f-featured").checked ? (parseInt(field("f-featured-order").value, 10) || 0) : 0,
         features: collectList("features"),
-        variants: collectList("variants"),
+        variants: collectVariants(),
         categories: collectList("categories"),
         relations: collectRelations(),
     };
