@@ -1421,3 +1421,130 @@ body.dark #darkModeButton:hover{
         font-size: 320%;
     }
 }
+
+/* --- öne çıkan sırası (editör) --- */
+
+.edit-order-row{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.edit-order-row .form-input{
+    width: 90px;
+    flex: 0 0 auto;
+}
+
+.edit-order-row .form-input:disabled{
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.edit-hint{
+    font-size: 85%;
+    opacity: 0.7;
+}
+
+/* --- kategori seçici --- */
+
+.cat-picker{
+    margin-top: 10px;
+    border: 2px solid #cccccc;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.cat-picker-title{
+    display: block;
+    font-size: 90%;
+    opacity: 0.8;
+    margin-bottom: 6px;
+}
+
+.cat-chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.cat-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 2px solid #cccccc;
+    border-radius: 999px;
+    background: none;
+    color: #000000;
+    padding: 5px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.cat-chip:hover{
+    border-color: #000000;
+}
+
+.cat-chip.on{
+    background-color: #000000;
+    border-color: #000000;
+    color: #ffffff;
+}
+
+.cat-chip-count{
+    font-size: 12px;
+    opacity: 0.55;
+}
+
+.cat-empty{
+    font-size: 90%;
+    opacity: 0.7;
+}
+
+.cat-new-btn{
+    font-size: 13px;
+}
+
+body.dark .cat-picker{
+    border-color: rgb(100, 100, 100);
+}
+
+body.dark .cat-chip{
+    border-color: rgb(120, 120, 120);
+    color: #ffffff;
+}
+
+body.dark .cat-chip:hover{
+    border-color: #ffffff;
+}
+
+body.dark .cat-chip.on{
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #000000;
+}
+
+/* --- öne çıkanlar sıralama listesi (yönetim) --- */
+
+.featured-row{
+    cursor: grab;
+}
+
+.featured-row.dragging{
+    opacity: 0.4;
+}
+
+.drag-handle{
+    opacity: 0.5;
+    margin-right: 6px;
+    cursor: grab;
+}
+
+@media (hover: none){
+    .featured-row,
+    .drag-handle{
+        cursor: default;
+    }
+}

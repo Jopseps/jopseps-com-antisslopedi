@@ -89,6 +89,13 @@
 
                 let featured = allChars.filter(c => c.featured);
                 if(!featured.length) featured = allChars;
+                // featured_order 0 = sırasız → sona; eşitlikte Türkçe isim sırası
+                const coll = new Intl.Collator("tr");
+                featured = featured.slice().sort((a, b) => {
+                    const ao = a.featured_order || Infinity, bo = b.featured_order || Infinity;
+                    if(ao !== bo) return ao - bo;
+                    return coll.compare(a.name, b.name);
+                });
 
                 const grid = document.getElementById("featured-grid");
                 grid.innerHTML = "";
