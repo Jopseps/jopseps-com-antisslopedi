@@ -54,8 +54,20 @@
                         <textarea id="f-description" class="form-input" rows="8"></textarea>
                     </div>
                     <div class="edit-field">
-                        <label class="straightText" for="f-image">Görsel yolu (örn. /files/images/characters/remi-remi.png)</label>
-                        <input id="f-image" class="form-input">
+                        <label class="straightText" for="f-image">Görsel</label>
+                        <div class="img-upload">
+                            <div class="img-preview" id="img-preview"></div>
+                            <div class="img-upload-controls">
+                                <input type="file" id="f-image-file" accept="image/png,image/jpeg,image/webp" onchange="pickImage()">
+                                <div class="edit-row">
+                                    <button class="form-btn" type="button" id="upload-btn" onclick="uploadImage()" disabled>Yükle</button>
+                                    <button class="form-btn danger" type="button" id="img-remove-btn" onclick="removeImage()" style="display:none;">Kaldır</button>
+                                </div>
+                                <span class="edit-hint straightText" id="img-hint">png / jpg / webp, en fazla 300 KB. Dikey 600×1000 ideal.</span>
+                                <input id="f-image" class="form-input" placeholder="/files/images/characters/remi-remi.png">
+                                <span class="edit-hint straightText">Yol elle de yazılabilir (Pages'teki dosyalar için).</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="edit-field">
                         <label class="straightText" for="f-first-appearance">İlk Görünüş</label>
@@ -73,7 +85,12 @@
                     <div class="edit-field">
                         <label class="straightText">Özellikler</label>
                         <div class="edit-list" id="list-features"></div>
-                        <button class="form-btn" type="button" onclick="addRow('features')">+ Ekle</button>
+                        <button class="form-btn" type="button" id="feat-toggle" onclick="toggleFeatPicker()">+ Ekle</button>
+                        <div class="cat-picker" id="feat-picker" style="display:none;">
+                            <label class="straightText cat-picker-title">Var olanlardan seç</label>
+                            <input id="feat-search" class="form-input" placeholder="ara veya yeni özellik yaz…" oninput="renderFeatChips()">
+                            <div class="cat-chips" id="feat-chips"></div>
+                        </div>
                     </div>
                     <div class="edit-field">
                         <label class="straightText">Varyasyonlar</label>
@@ -92,6 +109,7 @@
                     </div>
                     <div class="edit-field">
                         <label class="straightText">İlişkiler (id boş kalabilir — sayfası olmayan karakterler düz metin olur)</label>
+                        <datalist id="char-options"></datalist>
                         <div class="edit-list" id="list-relations"></div>
                         <button class="form-btn" type="button" onclick="addRelationRow()">+ Ekle</button>
                     </div>

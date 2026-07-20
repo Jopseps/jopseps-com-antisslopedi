@@ -1,12 +1,27 @@
 let mode = "new";
 let charId = null;
 let baseRevision = 0;
-let allCategories = [];   // [{category, count}] — kullanım sayısına göre sıralı
+let allChars = [];        // [{id, name}] — ilişki autocomplete'i için
+
+const MAX_IMAGE_BYTES = 300 * 1024;
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+// Kategoriler ve Özellikler aynı chip bulutunu paylaşır; tek fark veri kaynağı ve dom id'leri.
+const PICKERS = {
+    categories: { url: "/api/categories", key: "category", data: [], word: "kategori", prefix: "cat" },
+    features:   { url: "/api/features",   key: "feature",  data: [], word: "özellik",  prefix: "feat" },
+};
 
 function field(id){ return document.getElementById(id); }
 
 function showEditError(msg){
     field("edit-error").textContent = msg;
+}
+
+// "list-categories" → "categories" (picker'ı olmayan listeler için null)
+function pickerOf(container){
+    const name = container.id.replace("list-", "");
+    return PICKERS[name] ? name : null;
 }
 
 function makeRow(container, value){
@@ -19,11 +34,12 @@ function makeRow(container, value){
     del.className = "form-btn";
     del.type = "button";
     del.textContent = "sil";
+    const picker = pickerOf(container);
     del.onclick = () => {
         row.remove();
-        if(container.id === "list-categories") renderCatChips();
+        if(picker) renderChips(picker);
     };
-    if(container.id === "list-categories") input.oninput = renderCatChips;
+    if(picker) input.oninput = () => renderChips(picker);
     row.appendChild(input);
     row.appendChild(del);
     container.appendChild(row);
@@ -31,80 +47,82 @@ function makeRow(container, value){
 
 function addRow(listName, value){
     makeRow(field("list-" + listName), value);
-    if(listName === "categories") renderCatChips();
+    if(PICKERS[listName]) renderChips(listName);
 }
 
-// --- kategori seçici ---
+// --- kategori / özellik seçici ---
 
-function toggleCatPicker(){
-    const picker = field("cat-picker");
+function togglePicker(name){
+    const p = PICKERS[name];
+    const picker = field(p.prefix + "-picker");
     const open = picker.style.display !== "none";
     picker.style.display = open ? "none" : "";
-    field("cat-toggle").textContent = open ? "+ Ekle" : "− Kapat";
+    field(p.prefix + "-toggle").textContent = open ? "+ Ekle" : "− Kapat";
     if(!open){
-        renderCatChips();
-        field("cat-search").focus();
+        renderChips(name);
+        field(p.prefix + "-search").focus();
     }
 }
 
-async function loadCategories(){
+async function loadPicker(name){
+    const p = PICKERS[name];
     try{
-        const res = await fetch(API + "/api/categories");
-        if(res.ok) allCategories = await res.json();
+        const res = await fetch(API + p.url);
+        if(res.ok) p.data = await res.json();
     }catch(e){
-        allCategories = [];
+        p.data = [];
     }
-    renderCatChips();
+    renderChips(name);
 }
 
-function selectedCategories(){
-    return collectList("categories");
+function hasItem(name, value){
+    const n = value.toLocaleLowerCase("tr");
+    return collectList(name).some(v => v.toLocaleLowerCase("tr") === n);
 }
 
-function hasCategory(name){
-    const n = name.toLocaleLowerCase("tr");
-    return selectedCategories().some(c => c.toLocaleLowerCase("tr") === n);
-}
-
-function toggleCategory(name){
-    const n = name.toLocaleLowerCase("tr");
-    const rows = [...field("list-categories").querySelectorAll(".edit-row")];
+function toggleItem(name, value){
+    const n = value.toLocaleLowerCase("tr");
+    const rows = [...field("list-" + name).querySelectorAll(".edit-row")];
     const hit = rows.find(row => row.querySelector("input").value.trim().toLocaleLowerCase("tr") === n);
     if(hit){
         hit.remove();
-        renderCatChips();
+        renderChips(name);
     }else{
-        addRow("categories", name);
+        addRow(name, value);
     }
 }
 
-function addNewCategory(){
-    const name = field("cat-search").value.trim();
-    if(!name) return;
-    if(!hasCategory(name)) addRow("categories", name);
-    field("cat-search").value = "";
-    renderCatChips();
+function addNewItem(name){
+    const p = PICKERS[name];
+    const value = field(p.prefix + "-search").value.trim();
+    if(!value) return;
+    if(!hasItem(name, value)) addRow(name, value);
+    field(p.prefix + "-search").value = "";
+    renderChips(name);
 }
 
-function renderCatChips(){
-    const box = field("cat-chips");
+function renderChips(name){
+    const p = PICKERS[name];
+    const box = field(p.prefix + "-chips");
     if(!box) return;
-    const q = field("cat-search").value.trim().toLocaleLowerCase("tr");
-    const list = q ? allCategories.filter(c => c.category.toLocaleLowerCase("tr").includes(q)) : allCategories;
+    const raw = field(p.prefix + "-search").value.trim();
+    const q = raw.toLocaleLowerCase("tr");
+    const list = q ? p.data.filter(c => c[p.key].toLocaleLowerCase("tr").includes(q)) : p.data;
     box.innerHTML = "";
     list.forEach(c => {
+        const value = c[p.key];
         const chip = document.createElement("button");
         chip.type = "button";
-        chip.className = "cat-chip" + (hasCategory(c.category) ? " on" : "");
-        chip.onclick = () => toggleCategory(c.category);
-        chip.appendChild(document.createTextNode(c.category));
+        chip.className = "cat-chip" + (hasItem(name, value) ? " on" : "");
+        chip.onclick = () => toggleItem(name, value);
+        chip.appendChild(document.createTextNode(value));
         const n = document.createElement("span");
         n.className = "cat-chip-count";
         n.textContent = c.count;
         chip.appendChild(n);
         box.appendChild(chip);
     });
-    const exact = q && allCategories.some(c => c.category.toLocaleLowerCase("tr") === q);
+    const exact = q && p.data.some(c => c[p.key].toLocaleLowerCase("tr") === q);
     if(q && !exact){
         if(!list.length){
             const empty = document.createElement("div");
@@ -115,9 +133,127 @@ function renderCatChips(){
         const add = document.createElement("button");
         add.type = "button";
         add.className = "form-btn cat-new-btn";
-        add.textContent = `+ Yeni: «${field("cat-search").value.trim()}» ekle`;
-        add.onclick = addNewCategory;
+        add.textContent = `+ Yeni: «${raw}» ekle`;
+        add.onclick = () => addNewItem(name);
         box.appendChild(add);
+    }
+}
+
+// html onclick/oninput'ları için ince sarmalayıcılar
+function toggleCatPicker(){ togglePicker("categories"); }
+function renderCatChips(){ renderChips("categories"); }
+function toggleFeatPicker(){ togglePicker("features"); }
+function renderFeatChips(){ renderChips("features"); }
+
+// --- görsel ---
+
+let pendingFile = null;
+
+function imageHint(msg){ field("img-hint").textContent = msg; }
+
+function setImagePreview(){
+    const val = field("f-image").value.trim();
+    const box = field("img-preview");
+    field("img-remove-btn").style.display = val ? "inline-block" : "none";
+    box.innerHTML = "";
+    if(!val){
+        box.className = "img-preview empty";
+        box.textContent = "görsel yok";
+        return;
+    }
+    box.className = "img-preview";
+    const img = document.createElement("img");
+    img.alt = "önizleme";
+    img.onerror = () => {
+        box.className = "img-preview empty";
+        box.textContent = "görsel açılamadı";
+    };
+    img.src = imgSrc(val);
+    box.appendChild(img);
+}
+
+function pickImage(){
+    const file = field("f-image-file").files[0];
+    pendingFile = null;
+    field("upload-btn").disabled = true;
+    if(!file) return;
+    if(!IMAGE_TYPES.includes(file.type)){
+        imageHint("Sadece png, jpg veya webp yüklenebilir.");
+        return;
+    }
+    const kb = Math.round(file.size / 1024);
+    if(file.size > MAX_IMAGE_BYTES){
+        imageHint(`Dosya ${kb} KB — sınır 300 KB. Küçültüp tekrar dene.`);
+        return;
+    }
+    pendingFile = file;
+    field("upload-btn").disabled = false;
+    imageHint(`${file.name} — ${kb} KB. "Yükle"ye bas.`);
+    const box = field("img-preview");
+    box.className = "img-preview";
+    box.innerHTML = "";
+    const img = document.createElement("img");
+    img.alt = "önizleme";
+    img.src = URL.createObjectURL(file);
+    box.appendChild(img);
+}
+
+// R2'ye yazar; karakter satırı henüz yoksa da çalışır (id yeterli).
+async function uploadImage(){
+    if(!pendingFile) return;
+    const id = mode === "edit" ? charId : field("f-id").value.trim();
+    if(!/^[a-z0-9-]{2,50}$/.test(id)){
+        showEditError("Görsel yüklemeden önce geçerli bir id yaz (kebab-case).");
+        return;
+    }
+    showEditError("");
+    const btn = field("upload-btn");
+    btn.disabled = true;
+    imageHint("yükleniyor…");
+    let res, data;
+    try{
+        res = await fetch(`${API}/api/upload/${encodeURIComponent(id)}`, {
+            method: "POST",
+            headers: { "Content-Type": pendingFile.type, ...authHeaders() },
+            body: pendingFile,
+        });
+        data = await res.json();
+    }catch(e){
+        showEditError("Sunucuya ulaşılamadı.");
+        imageHint("");
+        btn.disabled = false;
+        return;
+    }
+    if(!res.ok){
+        showEditError(data.error || "Görsel yüklenemedi.");
+        imageHint("");
+        btn.disabled = false;
+        return;
+    }
+    pendingFile = null;
+    field("f-image-file").value = "";
+    field("f-image").value = data.image;
+    // Yeni karakterde görsel id'ye bağlı yüklendi; id sonradan değişirse dosya yetim kalır
+    if(mode === "new") field("f-id").disabled = true;
+    imageHint("Yüklendi — Kaydet'e basmadan sayfaya işlenmez."
+        + (mode === "new" ? " (görsel bu id'ye bağlandı, id kilitlendi)" : ""));
+    setImagePreview();
+}
+
+async function removeImage(){
+    const val = field("f-image").value.trim();
+    const id = mode === "edit" ? charId : field("f-id").value.trim();
+    pendingFile = null;
+    field("f-image-file").value = "";
+    field("upload-btn").disabled = true;
+    field("f-image").value = "";
+    if(mode === "new") field("f-id").disabled = false;
+    imageHint("Kaldırıldı — Kaydet'e basmadan sayfaya işlenmez.");
+    setImagePreview();
+    if(val.startsWith("/api/images/") && id){
+        try{
+            await fetch(`${API}/api/upload/${encodeURIComponent(id)}`, { method: "DELETE", headers: authHeaders() });
+        }catch(e){}
     }
 }
 
@@ -128,13 +264,63 @@ function syncOrderField(){
     if(!on) order.value = "";
 }
 
+// --- ilişkiler ---
+
+async function loadChars(){
+    try{
+        const res = await fetch(API + "/api/characters");
+        if(res.ok) allChars = await res.json();
+    }catch(e){
+        allChars = [];
+    }
+    const dl = field("char-options");
+    dl.innerHTML = "";
+    allChars.forEach(c => {
+        if(c.id === charId) return;   // karakter kendine ilişki kurmasın
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.name;
+        dl.appendChild(opt);
+    });
+    // liste geç geldiyse mevcut satırların rozetlerini tazele
+    [...field("list-relations").querySelectorAll(".edit-row")].forEach(row => row._syncRel && row._syncRel());
+}
+
 function addRelationRow(relatedId, label){
     const row = document.createElement("div");
-    row.className = "edit-row";
+    row.className = "edit-row rel-row";
     const idInput = document.createElement("input");
     idInput.className = "form-input";
     idInput.placeholder = "id (opsiyonel)";
+    idInput.setAttribute("list", "char-options");
     idInput.value = relatedId || "";
+    const hint = document.createElement("span");
+
+    // Datalist öneri verir ama serbest yazım açık kalır: sayfası olmayan karakterler
+    // related_id boş kalıp düz metin olarak render edilir.
+    const sync = () => {
+        const v = idInput.value.trim();
+        if(!v){
+            hint.className = "rel-hint straightText";
+            hint.textContent = "";
+            return;
+        }
+        const hit = allChars.find(c => c.id === v);
+        hint.className = "rel-hint straightText " + (hit ? "ok" : "warn");
+        hint.textContent = hit ? hit.name : "sayfası yok — düz metin";
+    };
+    // ad yazılırsa id'ye çevir ("Remi Remi" → "remi-remi")
+    const resolveName = () => {
+        const v = idInput.value.trim().toLocaleLowerCase("tr");
+        if(!v || allChars.some(c => c.id === idInput.value.trim())) return;
+        const hit = allChars.find(c => c.name.toLocaleLowerCase("tr") === v);
+        if(hit) idInput.value = hit.id;
+        sync();
+    };
+    idInput.oninput = sync;
+    idInput.onchange = resolveName;
+    idInput.onblur = resolveName;
+
     const labelInput = document.createElement("input");
     labelInput.className = "form-input";
     labelInput.placeholder = "etiket (örn. ikiz)";
@@ -145,8 +331,11 @@ function addRelationRow(relatedId, label){
     del.textContent = "sil";
     del.onclick = () => row.remove();
     row.appendChild(idInput);
+    row.appendChild(hint);
     row.appendChild(labelInput);
     row.appendChild(del);
+    row._syncRel = sync;
+    sync();
     field("list-relations").appendChild(row);
 }
 
@@ -169,6 +358,7 @@ function fillForm(d){
     field("f-summary").value = d.summary || "";
     field("f-description").value = d.description || "";
     field("f-image").value = d.image || "";
+    setImagePreview();
     field("f-first-appearance").value = d.first_appearance || "";
     field("f-featured").checked = !!d.featured;
     field("f-featured-order").value = d.featured_order ? d.featured_order : "";
@@ -193,11 +383,16 @@ async function initEditor(){
         return;
     }
 
-    loadCategories();
+    field("f-image").oninput = setImagePreview;
+    setImagePreview();
 
     const params = new URLSearchParams(location.search);
     charId = params.get("char");
     const rev = params.get("rev");
+
+    loadPicker("categories");
+    loadPicker("features");
+    loadChars();
 
     if(!charId){
         mode = "new";
@@ -364,7 +559,12 @@ async function renameId(){
     history.replaceState(null, "", `duzenle.html?char=${encodeURIComponent(charId)}`);
     document.getElementById("cancel-link").href = `wiki.html?char=${encodeURIComponent(charId)}`;
     const note = document.getElementById("rev-note");
-    note.textContent = `Id "${charId}" oldu. Bağlantılar ve geçmiş otomatik taşındı; görsel dosyası varsa /files/images/characters/${charId}.png olarak elle yeniden adlandır (Görsel yolu alanını da güncelle).`;
+    // Yüklenmiş görsel R2'de otomatik taşındı; elle girilen /files/... yolu taşınmaz
+    const manual = data.image && !data.image.startsWith("/api/images/");
+    if(data.image !== undefined) field("f-image").value = data.image || "";
+    setImagePreview();
+    note.textContent = `Id "${charId}" oldu. Bağlantılar, geçmiş ve yüklenmiş görsel otomatik taşındı.`
+        + (manual ? ` Görsel yolu elle girilmiş — /files/images/characters/${charId}.png olarak sen yeniden adlandır ve alanı güncelle.` : "");
     note.style.display = "block";
 }
 

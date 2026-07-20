@@ -13,9 +13,16 @@ function initials(name){
     return name.split(" ").map(w => w[0]).filter(Boolean).join("").slice(0, 2).toLocaleUpperCase("tr");
 }
 
+// R2 görselleri "/api/images/..." olarak saklanır (Worker servis eder), elle girilen
+// "/files/images/..." yolları Pages'ten gelir. Tam URL'lere de dokunma.
+function imgSrc(image){
+    if(!image) return "";
+    return image.startsWith("/api/") ? API + image : image;
+}
+
 function charCard(char){
     const imgHtml = char.image
-        ? `<img src="${escHtml(char.image)}" alt="${escHtml(char.name)}">`
+        ? `<img src="${escHtml(imgSrc(char.image))}" alt="${escHtml(char.name)}">`
         : `<div class="char-card-placeholder">${escHtml(initials(char.name))}</div>`;
     const card = document.createElement("a");
     card.href = `wiki.html?char=${encodeURIComponent(char.id)}`;

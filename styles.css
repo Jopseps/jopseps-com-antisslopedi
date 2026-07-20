@@ -1404,6 +1404,20 @@ body.dark #darkModeButton:hover{
         gap: 10px;
     }
 
+    .img-upload{
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .img-preview{
+        align-self: flex-start;
+    }
+
+    .rel-hint{
+        max-width: 100%;
+        flex: 1 0 100%;
+    }
+
     .rev-list{
         padding: 0 3%;
     }
@@ -1446,7 +1460,80 @@ body.dark #darkModeButton:hover{
     opacity: 0.7;
 }
 
-/* --- kategori seçici --- */
+/* --- görsel yükleme --- */
+
+.img-upload{
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.img-upload-controls{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.img-preview{
+    width: 108px;
+    height: 180px;
+    flex: 0 0 auto;
+    border: 2px solid #cccccc;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.img-preview img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.img-preview.empty{
+    border-style: dashed;
+    font-size: 80%;
+    opacity: 0.6;
+    padding: 6px;
+}
+
+.img-upload input[type="file"]{
+    font-family: inherit;
+    font-size: 13px;
+    max-width: 100%;
+}
+
+body.dark .img-preview{
+    border-color: rgb(100, 100, 100);
+}
+
+/* --- ilişki satırı --- */
+
+.rel-hint{
+    font-size: 80%;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40%;
+}
+
+.rel-hint.ok{
+    opacity: 0.7;
+}
+
+.rel-hint.warn{
+    opacity: 0.9;
+    font-style: italic;
+}
+
+/* --- kategori / özellik seçici --- */
 
 .cat-picker{
     margin-top: 10px;
