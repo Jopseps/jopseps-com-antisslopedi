@@ -2,7 +2,7 @@
 
 const API = location.hostname === "localhost" || location.hostname === "127.0.0.1"
     ? "http://localhost:8787"
-    : "https://antisslopedi-server.yusufmertturan.workers.dev";
+    : "https://api.jopseps.com";
 
 function escHtml(s){
     if(!s) return "";
