@@ -1635,3 +1635,116 @@ body.dark .cat-chip.on{
         cursor: default;
     }
 }
+
+/* --- katkı puanı rozeti --- */
+
+.point-badge{
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid #9ac;
+    background-color: #eef4fa;
+    color: #000000;
+}
+
+body.dark .point-badge{
+    background-color: rgb(30, 50, 70);
+    border-color: rgb(120, 160, 200);
+    color: #ffffff;
+}
+
+/* --- yönetim: geçmiş sekmesi --- */
+
+.hist-filters{
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.hist-footer{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.hist-per{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 90%;
+}
+
+.hist-per select{
+    width: auto;
+    padding: 4px 8px;
+}
+
+.hist-pager{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.hist-total{
+    font-size: 85%;
+    opacity: 0.6;
+    margin-left: 8px;
+}
+
+.page-btn{
+    min-width: 32px;
+    padding: 4px 8px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 90%;
+    cursor: pointer;
+}
+
+.page-btn:hover:not(:disabled){
+    border-color: #888888;
+}
+
+.page-btn.active{
+    border-color: #000000;
+    font-weight: bold;
+}
+
+.page-btn:disabled{
+    opacity: 0.35;
+    cursor: default;
+}
+
+.page-gap{
+    opacity: 0.5;
+    padding: 0 2px;
+}
+
+body.dark .page-btn{
+    border-color: rgb(110, 110, 110);
+}
+
+body.dark .page-btn:hover:not(:disabled){
+    border-color: rgb(180, 180, 180);
+}
+
+body.dark .page-btn.active{
+    border-color: #ffffff;
+}
+
+/* --- gezinen içerik linkleri altı çizili --- */
+/* header/nav/kart gibi buton görünümlü linkler global a{text-decoration:none} ile kalıyor */
+
+.wiki-section a,
+.wiki-infobox a,
+.admin-list a,
+.rev-list a,
+.char-card h3{
+    text-decoration: underline;
+}

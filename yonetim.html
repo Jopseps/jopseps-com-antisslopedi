@@ -34,6 +34,7 @@
                         <button class="admin-tab active" id="tabbtn-stats" type="button" onclick="showTab('stats')">İstatistik</button>
                         <button class="admin-tab" id="tabbtn-users" type="button" onclick="showTab('users')">Kullanıcılar</button>
                         <button class="admin-tab" id="tabbtn-featured" type="button" onclick="showTab('featured')">Öne Çıkanlar</button>
+                        <button class="admin-tab" id="tabbtn-history" type="button" onclick="showTab('history')">Geçmiş</button>
                         <button class="admin-tab" id="tabbtn-archive" type="button" onclick="showTab('archive')">Arşiv</button>
                         <button class="admin-tab" id="tabbtn-settings" type="button" onclick="showTab('settings')">Ayarlar</button>
                     </div>
@@ -56,6 +57,30 @@
                         <div class="edit-actions">
                             <button class="form-btn" type="button" onclick="saveFeatured()">Sırayı kaydet</button>
                             <span class="straightText" id="featured-note" style="opacity:0.7;"></span>
+                        </div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-history" style="display:none;">
+                        <p class="straightText admin-hint">Sitedeki tüm düzenlemeler, yeniden eskiye. Satırdaki tarihe tıklayınca o karakterin geçmiş sayfası açılır.</p>
+                        <div class="edit-row hist-filters">
+                            <input id="hist-user" class="form-input" placeholder="kullanıcı adı ile filtrele" list="hist-user-options">
+                            <datalist id="hist-user-options"></datalist>
+                            <input id="hist-char" class="form-input" placeholder="karakter id ile filtrele" list="hist-char-options">
+                            <datalist id="hist-char-options"></datalist>
+                            <button class="form-btn" type="button" onclick="applyHistFilter()">Filtrele</button>
+                            <button class="form-btn" type="button" onclick="clearHistFilter()">Temizle</button>
+                        </div>
+                        <div id="hist-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                        <div class="hist-footer">
+                            <label class="straightText hist-per">
+                                sayfa başına
+                                <select id="hist-per" class="form-input" onchange="changeHistPer()">
+                                    <option value="10">10</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </label>
+                            <div class="hist-pager" id="hist-pager"></div>
                         </div>
                     </div>
 
