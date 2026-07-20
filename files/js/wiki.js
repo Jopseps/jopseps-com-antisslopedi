@@ -103,7 +103,7 @@ function renderInfobox(char){
     const body = document.getElementById("infobox-body");
 
     if(char.image){
-        imgWrap.innerHTML = `<img src="${escHtml(char.image)}" alt="${escHtml(char.name)}"/>`;
+        imgWrap.innerHTML = `<img src="${escHtml(imgSrc(char.image))}" alt="${escHtml(char.name)}"/>`;
     }else{
         imgWrap.innerHTML = `<div class="wiki-initials-placeholder">${initials(char.name)}</div>`;
     }
