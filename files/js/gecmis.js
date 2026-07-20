@@ -146,6 +146,7 @@ async function compareRevisions(){
         ["image", "Görsel", "text"],
         ["first_appearance", "İlk Görünüş", "text"],
         ["featured", "Öne çıkan", "bool"],
+        ["featured_order", "Öne çıkan sırası", "text"],
         ["features", "Özellikler", "list"],
         ["variants", "Varyasyonlar", "list"],
         ["categories", "Kategoriler", "list"],

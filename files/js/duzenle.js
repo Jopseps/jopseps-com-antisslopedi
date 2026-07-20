@@ -1,6 +1,7 @@
 let mode = "new";
 let charId = null;
 let baseRevision = 0;
+let allCategories = [];   // [{category, count}] — kullanım sayısına göre sıralı
 
 function field(id){ return document.getElementById(id); }
 
@@ -18,7 +19,11 @@ function makeRow(container, value){
     del.className = "form-btn";
     del.type = "button";
     del.textContent = "sil";
-    del.onclick = () => row.remove();
+    del.onclick = () => {
+        row.remove();
+        if(container.id === "list-categories") renderCatChips();
+    };
+    if(container.id === "list-categories") input.oninput = renderCatChips;
     row.appendChild(input);
     row.appendChild(del);
     container.appendChild(row);
@@ -26,6 +31,101 @@ function makeRow(container, value){
 
 function addRow(listName, value){
     makeRow(field("list-" + listName), value);
+    if(listName === "categories") renderCatChips();
+}
+
+// --- kategori seçici ---
+
+function toggleCatPicker(){
+    const picker = field("cat-picker");
+    const open = picker.style.display !== "none";
+    picker.style.display = open ? "none" : "";
+    field("cat-toggle").textContent = open ? "+ Ekle" : "− Kapat";
+    if(!open){
+        renderCatChips();
+        field("cat-search").focus();
+    }
+}
+
+async function loadCategories(){
+    try{
+        const res = await fetch(API + "/api/categories");
+        if(res.ok) allCategories = await res.json();
+    }catch(e){
+        allCategories = [];
+    }
+    renderCatChips();
+}
+
+function selectedCategories(){
+    return collectList("categories");
+}
+
+function hasCategory(name){
+    const n = name.toLocaleLowerCase("tr");
+    return selectedCategories().some(c => c.toLocaleLowerCase("tr") === n);
+}
+
+function toggleCategory(name){
+    const n = name.toLocaleLowerCase("tr");
+    const rows = [...field("list-categories").querySelectorAll(".edit-row")];
+    const hit = rows.find(row => row.querySelector("input").value.trim().toLocaleLowerCase("tr") === n);
+    if(hit){
+        hit.remove();
+        renderCatChips();
+    }else{
+        addRow("categories", name);
+    }
+}
+
+function addNewCategory(){
+    const name = field("cat-search").value.trim();
+    if(!name) return;
+    if(!hasCategory(name)) addRow("categories", name);
+    field("cat-search").value = "";
+    renderCatChips();
+}
+
+function renderCatChips(){
+    const box = field("cat-chips");
+    if(!box) return;
+    const q = field("cat-search").value.trim().toLocaleLowerCase("tr");
+    const list = q ? allCategories.filter(c => c.category.toLocaleLowerCase("tr").includes(q)) : allCategories;
+    box.innerHTML = "";
+    list.forEach(c => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (hasCategory(c.category) ? " on" : "");
+        chip.onclick = () => toggleCategory(c.category);
+        chip.appendChild(document.createTextNode(c.category));
+        const n = document.createElement("span");
+        n.className = "cat-chip-count";
+        n.textContent = c.count;
+        chip.appendChild(n);
+        box.appendChild(chip);
+    });
+    const exact = q && allCategories.some(c => c.category.toLocaleLowerCase("tr") === q);
+    if(q && !exact){
+        if(!list.length){
+            const empty = document.createElement("div");
+            empty.className = "cat-empty straightText";
+            empty.textContent = "Eşleşme yok";
+            box.appendChild(empty);
+        }
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "form-btn cat-new-btn";
+        add.textContent = `+ Yeni: «${field("cat-search").value.trim()}» ekle`;
+        add.onclick = addNewCategory;
+        box.appendChild(add);
+    }
+}
+
+function syncOrderField(){
+    const on = field("f-featured").checked;
+    const order = field("f-featured-order");
+    order.disabled = !on;
+    if(!on) order.value = "";
 }
 
 function addRelationRow(relatedId, label){
@@ -71,6 +171,8 @@ function fillForm(d){
     field("f-image").value = d.image || "";
     field("f-first-appearance").value = d.first_appearance || "";
     field("f-featured").checked = !!d.featured;
+    field("f-featured-order").value = d.featured_order ? d.featured_order : "";
+    syncOrderField();
     field("list-features").innerHTML = "";
     field("list-variants").innerHTML = "";
     field("list-categories").innerHTML = "";
@@ -90,6 +192,8 @@ async function initEditor(){
         location.href = "index.html";
         return;
     }
+
+    loadCategories();
 
     const params = new URLSearchParams(location.search);
     charId = params.get("char");
@@ -153,6 +257,7 @@ async function save(){
         image: field("f-image").value,
         first_appearance: field("f-first-appearance").value,
         featured: field("f-featured").checked ? 1 : 0,
+        featured_order: field("f-featured").checked ? (parseInt(field("f-featured-order").value, 10) || 0) : 0,
         features: collectList("features"),
         variants: collectList("variants"),
         categories: collectList("categories"),
