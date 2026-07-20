@@ -7,7 +7,7 @@ function showAdminError(msg){
 }
 
 function showTab(name){
-    ["stats", "users", "archive", "settings"].forEach(t => {
+    ["stats", "users", "featured", "archive", "settings"].forEach(t => {
         document.getElementById("tab-" + t).style.display = t === name ? "block" : "none";
         document.getElementById("tabbtn-" + t).classList.toggle("active", t === name);
     });
@@ -125,6 +125,107 @@ async function saveInvite(){
     }
 }
 
+// --- öne çıkanlar sıralaması ---
+
+let allChars = [];        // tüm karakterler (dropdown için)
+let featuredIds = [];     // sıralı id listesi — kaydedilene kadar sadece burada
+let dragId = null;
+
+async function loadFeatured(){
+    const res = await fetch(`${API}/api/characters`);
+    if(!res.ok) throw new Error(res.status);
+    allChars = await res.json();
+    const coll = new Intl.Collator("tr");
+    featuredIds = allChars
+        .filter(c => c.featured)
+        .sort((a, b) => {
+            const ao = a.featured_order || Infinity, bo = b.featured_order || Infinity;
+            if(ao !== bo) return ao - bo;
+            return coll.compare(a.name, b.name);
+        })
+        .map(c => c.id);
+    renderFeatured();
+}
+
+function charName(id){
+    const c = allChars.find(x => x.id === id);
+    return c ? c.name : id;
+}
+
+function renderFeatured(){
+    const list = document.getElementById("featured-list");
+    if(!featuredIds.length){
+        list.innerHTML = `<p class="straightText" style="opacity:0.7;">Öne çıkan karakter yok — ana sayfa tüm karakterleri gösterir.</p>`;
+    }else{
+        list.innerHTML = featuredIds.map((id, i) =>
+            `<div class="rev-row featured-row" draggable="true" data-id="${escHtml(id)}">
+                <span class="straightText"><span class="drag-handle">≡</span> ${i + 1}. <b>${escHtml(charName(id))}</b> <span style="opacity:0.6;">(${escHtml(id)})</span></span>
+                <div class="rev-row-actions">
+                    <button class="form-btn" type="button" onclick="moveFeatured('${encodeURIComponent(id)}', -1)">↑</button>
+                    <button class="form-btn" type="button" onclick="moveFeatured('${encodeURIComponent(id)}', 1)">↓</button>
+                    <button class="form-btn danger" type="button" onclick="removeFeatured('${encodeURIComponent(id)}')">×</button>
+                </div>
+            </div>`
+        ).join("");
+        [...list.querySelectorAll(".featured-row")].forEach(row => {
+            row.ondragstart = () => { dragId = row.dataset.id; row.classList.add("dragging"); };
+            row.ondragend = () => { dragId = null; row.classList.remove("dragging"); };
+            row.ondragover = e => { e.preventDefault(); };
+            row.ondrop = e => {
+                e.preventDefault();
+                const target = row.dataset.id;
+                if(!dragId || dragId === target) return;
+                featuredIds.splice(featuredIds.indexOf(dragId), 1);
+                featuredIds.splice(featuredIds.indexOf(target), 0, dragId);
+                renderFeatured();
+            };
+        });
+    }
+
+    const select = document.getElementById("featured-add");
+    const coll = new Intl.Collator("tr");
+    const rest = allChars.filter(c => !featuredIds.includes(c.id)).sort((a, b) => coll.compare(a.name, b.name));
+    select.innerHTML = rest.length
+        ? rest.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join("")
+        : `<option value="">— öne çıkmayan karakter kalmadı —</option>`;
+}
+
+function moveFeatured(encodedId, delta){
+    const id = decodeURIComponent(encodedId);
+    const i = featuredIds.indexOf(id);
+    const j = i + delta;
+    if(i < 0 || j < 0 || j >= featuredIds.length) return;
+    featuredIds[i] = featuredIds[j];
+    featuredIds[j] = id;
+    renderFeatured();
+}
+
+function removeFeatured(encodedId){
+    featuredIds = featuredIds.filter(x => x !== decodeURIComponent(encodedId));
+    renderFeatured();
+}
+
+function addFeatured(){
+    const id = document.getElementById("featured-add").value;
+    if(!id || featuredIds.includes(id)) return;
+    featuredIds.push(id);
+    renderFeatured();
+}
+
+async function saveFeatured(){
+    showAdminError("");
+    const note = document.getElementById("featured-note");
+    note.textContent = "kaydediliyor...";
+    try{
+        await adminFetch("/api/admin/featured", { method: "PUT", body: JSON.stringify({ ids: featuredIds }) });
+        note.textContent = "kaydedildi ✓";
+        await loadFeatured();
+    }catch(e){
+        note.textContent = "";
+        showAdminError("Sıra kaydedilemedi: " + e.message);
+    }
+}
+
 async function loadDeleted(){
     const rows = await adminFetch("/api/admin/deleted");
     const list = document.getElementById("deleted-list");
@@ -158,7 +259,7 @@ async function initAdmin(){
         return;
     }
     try{
-        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted()]);
+        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted(), loadFeatured()]);
     }catch(e){
         showAdminError("Panel yüklenemedi: " + e.message);
     }
