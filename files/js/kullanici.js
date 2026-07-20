@@ -37,8 +37,9 @@ async function loadProfile(){
                 <button class="form-btn" type="submit">Şifreyi Değiştir</button>
             </form>`;
     }
-    document.getElementById("profile-meta").textContent =
-        `${ROLE_LABELS[profile.role] || profile.role} · üyelik: ${(profile.created_at || "").slice(0, 10)} · ${profile.edits.length} düzenleme`;
+    document.getElementById("profile-meta").innerHTML =
+        `${escHtml(ROLE_LABELS[profile.role] || profile.role)} · üyelik: ${escHtml((profile.created_at || "").slice(0, 10))}`
+        + ` · ${profile.edits.length} düzenleme · <span class="point-badge">${profile.points || 0} puan</span>`;
 
     const list = document.getElementById("edit-list");
     if(!profile.edits.length){
