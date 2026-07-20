@@ -33,6 +33,7 @@
                     <div class="admin-tabs">
                         <button class="admin-tab active" id="tabbtn-stats" type="button" onclick="showTab('stats')">İstatistik</button>
                         <button class="admin-tab" id="tabbtn-users" type="button" onclick="showTab('users')">Kullanıcılar</button>
+                        <button class="admin-tab" id="tabbtn-featured" type="button" onclick="showTab('featured')">Öne Çıkanlar</button>
                         <button class="admin-tab" id="tabbtn-archive" type="button" onclick="showTab('archive')">Arşiv</button>
                         <button class="admin-tab" id="tabbtn-settings" type="button" onclick="showTab('settings')">Ayarlar</button>
                     </div>
@@ -43,6 +44,19 @@
 
                     <div class="admin-tab-content" id="tab-users" style="display:none;">
                         <div id="user-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-featured" style="display:none;">
+                        <p class="straightText admin-hint">Ana sayfadaki "Öne Çıkanlar" listesi. Sürükleyerek sırala, × ile listeden çıkar. Kaydetmeden değişiklikler uygulanmaz — geçmişe kayıt düşmez.</p>
+                        <div id="featured-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                        <div class="edit-row">
+                            <select id="featured-add" class="form-input"></select>
+                            <button class="form-btn" type="button" onclick="addFeatured()">Öne çıkar</button>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="form-btn" type="button" onclick="saveFeatured()">Sırayı kaydet</button>
+                            <span class="straightText" id="featured-note" style="opacity:0.7;"></span>
+                        </div>
                     </div>
 
                     <div class="admin-tab-content" id="tab-archive" style="display:none;">

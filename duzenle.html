@@ -62,7 +62,12 @@
                         <input id="f-first-appearance" class="form-input">
                     </div>
                     <div class="edit-field">
-                        <label class="straightText"><input type="checkbox" id="f-featured"> Öne çıkan (ana sayfada göster)</label>
+                        <label class="straightText"><input type="checkbox" id="f-featured" onchange="syncOrderField()"> Öne çıkan (ana sayfada göster)</label>
+                        <div class="edit-order-row">
+                            <label class="straightText" for="f-featured-order">Sıra</label>
+                            <input id="f-featured-order" class="form-input" type="number" min="0" step="1" placeholder="0" disabled>
+                            <span class="edit-hint straightText">boş / 0 = sırasız, listenin sonuna düşer</span>
+                        </div>
                     </div>
 
                     <div class="edit-field">
@@ -78,7 +83,12 @@
                     <div class="edit-field">
                         <label class="straightText">Kategoriler</label>
                         <div class="edit-list" id="list-categories"></div>
-                        <button class="form-btn" type="button" onclick="addRow('categories')">+ Ekle</button>
+                        <button class="form-btn" type="button" id="cat-toggle" onclick="toggleCatPicker()">+ Ekle</button>
+                        <div class="cat-picker" id="cat-picker" style="display:none;">
+                            <label class="straightText cat-picker-title">Var olanlardan seç</label>
+                            <input id="cat-search" class="form-input" placeholder="ara veya yeni kategori yaz…" oninput="renderCatChips()">
+                            <div class="cat-chips" id="cat-chips"></div>
+                        </div>
                     </div>
                     <div class="edit-field">
                         <label class="straightText">İlişkiler (id boş kalabilir — sayfası olmayan karakterler düz metin olur)</label>
