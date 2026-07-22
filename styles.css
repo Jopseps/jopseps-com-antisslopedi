@@ -587,6 +587,50 @@ html{
     border-color: currentColor;
 }
 
+/* Görsel diff önizlemeleri */
+.diff-img-row{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.diff-img-frame{
+    display: inline-flex;
+    border: 3px solid #d0d7de;
+    border-radius: 6px;
+    padding: 2px;
+    background: #f6f8fa;
+}
+
+.diff-img-frame img{
+    display: block;
+    max-height: 130px;
+    max-width: 100px;
+    width: auto;
+    height: auto;
+    border-radius: 3px;
+}
+
+.diff-img-frame.del{ border-color: #cf222e; background: #ffebe9; }
+.diff-img-frame.add{ border-color: #1a7f37; background: #dafbe1; }
+
+.diff-img-arrow{
+    font-size: 20px;
+    font-weight: 800;
+    opacity: 0.6;
+}
+
+.diff-img-note{
+    font-size: 90%;
+    opacity: 0.75;
+}
+
+body.dark .diff-img-frame{ border-color: #444c56; background: #22272e; }
+body.dark .diff-img-frame.del{ border-color: #f85149; background: #3c1618; }
+body.dark .diff-img-frame.add{ border-color: #3fb950; background: #12261e; }
+
 .diff-field{
     margin-top: 12px;
 }
@@ -637,11 +681,18 @@ html{
 .search-wrap{
     display: flex;
     justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
     padding: 14px 5% 0;
 }
 
 .search-wrap .form-input{
     max-width: 420px;
+}
+
+.search-wrap #char-sort{
+    max-width: 170px;
+    flex: 0 0 auto;
 }
 
 /* --- Wiki styles --- */

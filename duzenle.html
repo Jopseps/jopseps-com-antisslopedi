@@ -79,6 +79,12 @@
                     <div class="edit-field">
                         <label class="straightText" for="f-first-appearance">İlk Görünüş</label>
                         <input id="f-first-appearance" class="form-input">
+                        <button class="form-btn" type="button" id="fa-toggle" onclick="toggleFaPicker()">+ Seç</button>
+                        <div class="cat-picker" id="fa-picker" style="display:none;">
+                            <label class="straightText cat-picker-title">Var olanlardan seç</label>
+                            <input id="fa-search" class="form-input" placeholder="ara veya yeni değer yaz…" oninput="renderFaChips()">
+                            <div class="cat-chips" id="fa-chips"></div>
+                        </div>
                     </div>
                     <div class="edit-field">
                         <label class="straightText"><input type="checkbox" id="f-featured" onchange="syncOrderField()"> Öne çıkan (ana sayfada göster)</label>

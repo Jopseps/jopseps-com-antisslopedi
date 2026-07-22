@@ -33,6 +33,10 @@
 
                 <div class="search-wrap">
                     <input id="char-search" class="form-input" type="search" placeholder="Karakter ara..." oninput="filterChars()">
+                    <select id="char-sort" class="form-input" onchange="changeSort()" title="Sıralama">
+                        <option value="ozel">Özel</option>
+                        <option value="alfabetik">Alfabetik (A–Z)</option>
+                    </select>
                 </div>
 
                 <div id="char-grid" class="projects-grid" style="margin-top:20px;">
