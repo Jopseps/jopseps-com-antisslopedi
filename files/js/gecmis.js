@@ -98,6 +98,24 @@ function diffTextHtml(a, b){
     ).join(" ");
 }
 
+// Görsel alanı: linki değil küçük önizlemeleri göster. eski=kırmızı, yeni=yeşil.
+// R2 tek görseli id başına saklar (üzerine yazılır); ?v=... sadece cache kırıcı — bu yüzden
+// alt taban aynıysa iki özdeş resim yerine tek önizleme + not gösteririz.
+function imgThumb(raw, cls){
+    return `<span class="diff-img-frame ${cls}"><img src="${escHtml(imgSrc(raw))}" alt="" loading="lazy"></span>`;
+}
+
+function diffImageHtml(oldRaw, newRaw){
+    const o = oldRaw || "", n = newRaw || "";
+    const base = s => s.split("?")[0];
+    if(!o && n) return `<div class="diff-img-row">${imgThumb(n, "add")}</div>`;
+    if(o && !n) return `<div class="diff-img-row">${imgThumb(o, "del")}</div>`;
+    if(base(o) === base(n)){
+        return `<div class="diff-img-row">${imgThumb(n, "")}<span class="straightText diff-img-note">görsel güncellendi</span></div>`;
+    }
+    return `<div class="diff-img-row">${imgThumb(o, "del")}<span class="diff-img-arrow">→</span>${imgThumb(n, "add")}</div>`;
+}
+
 function diffListHtml(a, b){
     a = a || []; b = b || [];
     const kept = b.filter(x => a.includes(x));
@@ -152,7 +170,7 @@ async function compareRevisions(){
         ["summary", "Özet", "text"],
         ["description", "Açıklama", "text"],
         ["story", "Hikaye", "text"],
-        ["image", "Görsel", "text"],
+        ["image", "Görsel", "img"],
         ["first_appearance", "İlk Görünüş", "text"],
         ["featured", "Öne çıkan", "bool"],
         ["featured_order", "Öne çıkan sırası", "text"],
@@ -175,6 +193,8 @@ async function compareRevisions(){
         let body;
         if(kind === "bool"){
             body = `<span class="diff-del">${a[key] ? "evet" : "hayır"}</span> → <span class="diff-add">${b[key] ? "evet" : "hayır"}</span>`;
+        }else if(kind === "img"){
+            body = diffImageHtml(a[key], b[key]);
         }else if(kind === "list" || kind === "rel" || kind === "var"){
             body = diffListHtml(av, bv);
         }else{

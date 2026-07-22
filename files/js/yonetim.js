@@ -234,6 +234,8 @@ async function loadInvite(){
     const input = document.getElementById("invite-input");
     input.value = c.invite_code || "";
     input.placeholder = "davet kodu";
+    const sort = document.getElementById("sort-input");
+    if(sort) sort.value = c.char_sort === "alfabetik" ? "alfabetik" : "ozel";
 }
 
 async function saveInvite(){
@@ -244,6 +246,19 @@ async function saveInvite(){
             body: JSON.stringify({ invite_code: document.getElementById("invite-input").value.trim() }),
         });
         showAdminError("Davet kodu güncellendi.");
+    }catch(e){
+        showAdminError("Kaydedilemedi: " + e.message);
+    }
+}
+
+async function saveCharSort(){
+    showAdminError("");
+    try{
+        await adminFetch("/api/admin/config", {
+            method: "PUT",
+            body: JSON.stringify({ char_sort: document.getElementById("sort-input").value }),
+        });
+        showAdminError("Varsayılan sıralama güncellendi.");
     }catch(e){
         showAdminError("Kaydedilemedi: " + e.message);
     }
