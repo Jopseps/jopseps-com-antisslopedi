@@ -291,6 +291,7 @@ async function loadChars(){
     // liste geç geldiyse mevcut satırların rozetlerini tazele
     [...field("list-relations").querySelectorAll(".edit-row")].forEach(row => row._syncRel && row._syncRel());
     renderVarChips();   // chip bulutu allChars'tan besleniyor, liste geç gelirse boş kalırdı
+    renderRelChips();
 }
 
 // Varyasyon satırı: tek görünür alan (ad). Ad bir karakterle eşleşirse variant_id
@@ -486,7 +487,7 @@ function addRelationRow(relatedId, label){
     del.className = "form-btn";
     del.type = "button";
     del.textContent = "sil";
-    del.onclick = () => row.remove();
+    del.onclick = () => { row.remove(); renderRelChips(); };
     row.appendChild(idInput);
     row.appendChild(hint);
     row.appendChild(labelInput);
@@ -494,6 +495,61 @@ function addRelationRow(relatedId, label){
     row._syncRel = sync;
     sync();
     field("list-relations").appendChild(row);
+    renderRelChips();
+}
+
+// --- ilişki seçici ---
+// Varyasyon chip bulutunun kardeşi, kaynağı allChars. Tıklanan chip linkli bir ilişki
+// satırı ekler (etiket boş — sonra doldurulur). Serbest metin ilişki için "+ Boş satır".
+
+function relRows(){
+    return [...field("list-relations").querySelectorAll(".edit-row")];
+}
+
+function toggleRelPicker(){
+    const picker = field("rel-picker");
+    const open = picker.style.display !== "none";
+    picker.style.display = open ? "none" : "";
+    field("rel-toggle").textContent = open ? "+ Karakterden seç" : "− Kapat";
+    if(!open){
+        renderRelChips();
+        field("rel-search").focus();
+    }
+}
+
+function toggleRelChar(c){
+    const hit = relRows().find(row => row.querySelector("input").value.trim() === c.id);
+    if(hit){
+        hit.remove();
+        renderRelChips();
+    }else{
+        addRelationRow(c.id, "");   // etiket boş — kaydetmeden önce doldurulmalı
+    }
+}
+
+function renderRelChips(){
+    const box = field("rel-chips");
+    if(!box) return;
+    const raw = field("rel-search").value.trim();
+    const q = raw.toLocaleLowerCase("tr");
+    const pool = allChars.filter(c => c.id !== charId);
+    const list = q ? pool.filter(c => c.name.toLocaleLowerCase("tr").includes(q) || c.id.includes(q)) : pool;
+    const linked = new Set(relRows().map(row => row.querySelector("input").value.trim()));
+    box.innerHTML = "";
+    list.forEach(c => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (linked.has(c.id) ? " on" : "");
+        chip.onclick = () => toggleRelChar(c);
+        chip.textContent = c.name;
+        box.appendChild(chip);
+    });
+    if(q && !list.length){
+        const empty = document.createElement("div");
+        empty.className = "cat-empty straightText";
+        empty.textContent = "Eşleşme yok";
+        box.appendChild(empty);
+    }
 }
 
 function collectList(listName){
@@ -514,6 +570,7 @@ function fillForm(d){
     field("f-full-name").value = d.full_name || "";
     field("f-summary").value = d.summary || "";
     field("f-description").value = d.description || "";
+    field("f-story").value = d.story || "";
     field("f-image").value = d.image || "";
     setImagePreview();
     field("f-first-appearance").value = d.first_appearance || "";
@@ -611,6 +668,7 @@ async function save(){
         full_name: field("f-full-name").value,
         summary: field("f-summary").value,
         description: field("f-description").value,
+        story: field("f-story").value,
         image: field("f-image").value,
         first_appearance: field("f-first-appearance").value,
         featured: field("f-featured").checked ? 1 : 0,
@@ -667,7 +725,8 @@ async function save(){
         return;
     }
 
-    location.href = `wiki.html?char=${encodeURIComponent(data.id)}`;
+    // replace (href değil): Geri tuşu düzenleme menüsüne değil, önceki sayfaya dönsün
+    location.replace(`wiki.html?char=${encodeURIComponent(data.id)}`);
 }
 
 // Two-step: first click unlocks the field, second click confirms the rename.
@@ -747,7 +806,7 @@ async function deleteCharacter(){
         showEditError(data.error || "Silinemedi.");
         return;
     }
-    location.href = "index.html";
+    location.replace("index.html");
 }
 
 initEditor();

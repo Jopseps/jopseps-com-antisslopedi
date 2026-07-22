@@ -60,6 +60,10 @@ function renderArticle(char){
 
     html += `<section class="wiki-section"><h2>Genel</h2><p>${escHtml(char.description || "")}</p></section>`;
 
+    if(char.story){
+        html += `<section class="wiki-section"><h2>Hikaye</h2><p>${escHtml(char.story)}</p></section>`;
+    }
+
     if(char.features && char.features.length){
         html += `<section class="wiki-section"><h2>Özellikler</h2><ul>`;
         char.features.forEach(a => { html += `<li>${escHtml(a)}</li>`; });

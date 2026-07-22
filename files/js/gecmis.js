@@ -151,6 +151,7 @@ async function compareRevisions(){
         ["full_name", "Tam Ad", "text"],
         ["summary", "Özet", "text"],
         ["description", "Açıklama", "text"],
+        ["story", "Hikaye", "text"],
         ["image", "Görsel", "text"],
         ["first_appearance", "İlk Görünüş", "text"],
         ["featured", "Öne çıkan", "bool"],
@@ -238,6 +239,7 @@ async function showRevision(revId){
     let html = `<h2 class="straightText">#${rev.id} — ${escHtml(d.name || "")}</h2>`;
     if(d.summary) html += `<p class="straightText"><b>Özet:</b> ${escHtml(d.summary)}</p>`;
     if(d.description) html += `<p class="straightText">${escHtml(d.description)}</p>`;
+    if(d.story) html += `<p class="straightText"><b>Hikaye:</b> ${escHtml(d.story)}</p>`;
 
     const listBlock = (title, items) => {
         if(!items || !items.length) return "";
