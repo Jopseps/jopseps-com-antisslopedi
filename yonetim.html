@@ -37,6 +37,7 @@
                         <button class="admin-tab active" id="tabbtn-stats" type="button" onclick="showTab('stats')">İstatistik</button>
                         <button class="admin-tab" id="tabbtn-users" type="button" onclick="showTab('users')">Kullanıcılar</button>
                         <button class="admin-tab" id="tabbtn-featured" type="button" onclick="showTab('featured')">Öne Çıkanlar</button>
+                        <button class="admin-tab" id="tabbtn-order" type="button" onclick="showTab('order')">Özel Sıra</button>
                         <button class="admin-tab" id="tabbtn-history" type="button" onclick="showTab('history')">Geçmiş</button>
                         <button class="admin-tab" id="tabbtn-archive" type="button" onclick="showTab('archive')">Arşiv</button>
                         <button class="admin-tab" id="tabbtn-settings" type="button" onclick="showTab('settings')">Ayarlar</button>
@@ -60,6 +61,19 @@
                         <div class="edit-actions">
                             <button class="form-btn" type="button" onclick="saveFeatured()">Sırayı kaydet</button>
                             <span class="straightText" id="featured-note" style="opacity:0.7;"></span>
+                        </div>
+                    </div>
+
+                    <div class="admin-tab-content" id="tab-order" style="display:none;">
+                        <p class="straightText admin-hint">Karakterler sayfasındaki "Özel" sıralaması. Sürükleyerek (veya ↑/↓) sırala, × ile listeden çıkar. Buradaki karakterler önce bu sırayla, kalanlar oluşturulma sırasıyla (eskiden yeniye) gösterilir. Kaydetmeden değişiklikler uygulanmaz — geçmişe kayıt düşmez.</p>
+                        <div id="order-list" class="admin-list"><p class="straightText">yükleniyor...</p></div>
+                        <div class="edit-row">
+                            <select id="order-add" class="form-input"></select>
+                            <button class="form-btn" type="button" onclick="addOrder()">Sıraya ekle</button>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="form-btn" type="button" onclick="saveOrder()">Sırayı kaydet</button>
+                            <span class="straightText" id="order-note" style="opacity:0.7;"></span>
                         </div>
                     </div>
 

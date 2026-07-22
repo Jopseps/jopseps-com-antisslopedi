@@ -13,6 +13,22 @@ async function loadHistory(){
     document.title = "Geçmiş: " + historyCharId + " — Antısslopedi";
     const back = document.getElementById("back-link");
     back.href = `wiki.html?char=${encodeURIComponent(historyCharId)}`;
+    // döngü önleme: bu karakterin wiki sayfasından geldiysek yeni geçmiş girdisi ekleme,
+    // geri git. yoksa wiki'nin "← Geri"si bizi tekrar buraya atar (wiki⇄geçmiş ping-pong).
+    // history.back() sonrası wiki'de referrer hâlâ karakterler kalır → oradan grid'e döner.
+    back.onclick = e => {
+        let fromWiki = false;
+        try{
+            const ref = new URL(document.referrer);
+            fromWiki = ref.origin === location.origin
+                && ref.pathname.endsWith("/wiki.html")
+                && ref.searchParams.get("char") === historyCharId;
+        }catch(_){}
+        if(fromWiki && history.length > 1){
+            e.preventDefault();
+            history.back();
+        }
+    };
 
     let revs;
     try{
