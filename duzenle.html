@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="styles.css">
         <link rel="icon" href="files/images/favicon.svg" type="image/svg+xml">
         <meta name="description" content="Tıss evreninin resmi ansiklopedisi.">
@@ -51,7 +54,11 @@
                     </div>
                     <div class="edit-field">
                         <label class="straightText" for="f-description">Açıklama</label>
-                        <textarea id="f-description" class="form-input" rows="8"></textarea>
+                        <textarea id="f-description" class="form-input" rows="4"></textarea>
+                    </div>
+                    <div class="edit-field">
+                        <label class="straightText" for="f-story">Hikaye (opsiyonel)</label>
+                        <textarea id="f-story" class="form-input" rows="4"></textarea>
                     </div>
                     <div class="edit-field">
                         <label class="straightText" for="f-image">Görsel</label>
@@ -117,7 +124,15 @@
                         <label class="straightText">İlişkiler (id boş kalabilir — sayfası olmayan karakterler düz metin olur)</label>
                         <datalist id="char-options"></datalist>
                         <div class="edit-list" id="list-relations"></div>
-                        <button class="form-btn" type="button" onclick="addRelationRow()">+ Ekle</button>
+                        <div class="edit-row">
+                            <button class="form-btn" type="button" onclick="addRelationRow()">+ Boş satır</button>
+                            <button class="form-btn" type="button" id="rel-toggle" onclick="toggleRelPicker()">+ Karakterden seç</button>
+                        </div>
+                        <div class="cat-picker" id="rel-picker" style="display:none;">
+                            <label class="straightText cat-picker-title">Karakterlerden seç (linkli eklenir, etiketi sonra yaz)</label>
+                            <input id="rel-search" class="form-input" placeholder="ara…" oninput="renderRelChips()">
+                            <div class="cat-chips" id="rel-chips"></div>
+                        </div>
                     </div>
 
                     <div class="form-error" id="edit-error"></div>
