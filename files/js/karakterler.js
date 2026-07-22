@@ -3,16 +3,19 @@
 let allChars = [];
 let sortMode = "ozel";   // "ozel" (oluşturulma, eskiden yeniye) | "alfabetik" (A→Z)
 
-// Özel = oluşturulma sırası, eskiden yeniye. seed satırları aynı zaman damgasını
-// paylaşabilir → id ile ikinci anahtar deterministik yapar.
+// Özel = admin'in yönetim panelinden verdiği custom_order (öne çıkanlar gibi), sonra
+// oluşturulma sırası eskiden yeniye. custom_order 0 = sırasız → listenin oluşturulma
+// kısmına düşer. seed satırları aynı zaman damgasını paylaşabilir → id deterministik yapar.
 function sortChars(){
     if(sortMode === "alfabetik"){
         allChars.sort((a, b) => new Intl.Collator("tr").compare(a.name, b.name));
     }else{
-        allChars.sort((a, b) =>
-            String(a.created_at || "").localeCompare(String(b.created_at || "")) ||
-            String(a.id).localeCompare(String(b.id))
-        );
+        allChars.sort((a, b) => {
+            const ao = a.custom_order || Infinity, bo = b.custom_order || Infinity;
+            if(ao !== bo) return ao - bo;
+            return String(a.created_at || "").localeCompare(String(b.created_at || "")) ||
+                String(a.id).localeCompare(String(b.id));
+        });
     }
 }
 

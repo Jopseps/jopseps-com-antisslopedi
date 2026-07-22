@@ -7,7 +7,7 @@ function showAdminError(msg){
 }
 
 function showTab(name){
-    ["stats", "users", "featured", "history", "archive", "settings"].forEach(t => {
+    ["stats", "users", "featured", "order", "history", "archive", "settings"].forEach(t => {
         document.getElementById("tab-" + t).style.display = t === name ? "block" : "none";
         document.getElementById("tabbtn-" + t).classList.toggle("active", t === name);
     });
@@ -365,6 +365,100 @@ async function saveFeatured(){
     }
 }
 
+// ── Özel sıra sekmesi (öne çıkanlarla aynı desen, custom_order üzerinden) ──
+let customIds = [];       // sıralı id listesi — kaydedilene kadar sadece burada
+let dragOrderId = null;
+
+async function loadCustomOrder(){
+    const res = await fetch(`${API}/api/characters`);
+    if(!res.ok) throw new Error(res.status);
+    allChars = await res.json();
+    const coll = new Intl.Collator("tr");
+    customIds = allChars
+        .filter(c => c.custom_order)
+        .sort((a, b) => {
+            const ao = a.custom_order || Infinity, bo = b.custom_order || Infinity;
+            if(ao !== bo) return ao - bo;
+            return coll.compare(a.name, b.name);
+        })
+        .map(c => c.id);
+    renderCustomOrder();
+}
+
+function renderCustomOrder(){
+    const list = document.getElementById("order-list");
+    if(!customIds.length){
+        list.innerHTML = `<p class="straightText" style="opacity:0.7;">Özel sıraya alınmış karakter yok — karakterler sayfası oluşturulma sırasını (eskiden yeniye) kullanır.</p>`;
+    }else{
+        list.innerHTML = customIds.map((id, i) =>
+            `<div class="rev-row featured-row" draggable="true" data-id="${escHtml(id)}">
+                <span class="straightText"><span class="drag-handle">≡</span> ${i + 1}. <b>${escHtml(charName(id))}</b> <span style="opacity:0.6;">(${escHtml(id)})</span></span>
+                <div class="rev-row-actions">
+                    <button class="form-btn" type="button" onclick="moveOrder('${encodeURIComponent(id)}', -1)">↑</button>
+                    <button class="form-btn" type="button" onclick="moveOrder('${encodeURIComponent(id)}', 1)">↓</button>
+                    <button class="form-btn danger" type="button" onclick="removeOrder('${encodeURIComponent(id)}')">×</button>
+                </div>
+            </div>`
+        ).join("");
+        [...list.querySelectorAll(".featured-row")].forEach(row => {
+            row.ondragstart = () => { dragOrderId = row.dataset.id; row.classList.add("dragging"); };
+            row.ondragend = () => { dragOrderId = null; row.classList.remove("dragging"); };
+            row.ondragover = e => { e.preventDefault(); };
+            row.ondrop = e => {
+                e.preventDefault();
+                const target = row.dataset.id;
+                if(!dragOrderId || dragOrderId === target) return;
+                customIds.splice(customIds.indexOf(dragOrderId), 1);
+                customIds.splice(customIds.indexOf(target), 0, dragOrderId);
+                renderCustomOrder();
+            };
+        });
+    }
+
+    const select = document.getElementById("order-add");
+    const coll = new Intl.Collator("tr");
+    const rest = allChars.filter(c => !customIds.includes(c.id)).sort((a, b) => coll.compare(a.name, b.name));
+    select.innerHTML = rest.length
+        ? rest.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join("")
+        : `<option value="">— sıraya eklenmemiş karakter kalmadı —</option>`;
+}
+
+function moveOrder(encodedId, delta){
+    const id = decodeURIComponent(encodedId);
+    const i = customIds.indexOf(id);
+    const j = i + delta;
+    if(i < 0 || j < 0 || j >= customIds.length) return;
+    customIds[i] = customIds[j];
+    customIds[j] = id;
+    renderCustomOrder();
+}
+
+function removeOrder(encodedId){
+    customIds = customIds.filter(x => x !== decodeURIComponent(encodedId));
+    renderCustomOrder();
+}
+
+function addOrder(){
+    const id = document.getElementById("order-add").value;
+    if(!id || customIds.includes(id)) return;
+    customIds.push(id);
+    renderCustomOrder();
+}
+
+async function saveOrder(){
+    showAdminError("");
+    const note = document.getElementById("order-note");
+    note.textContent = "kaydediliyor...";
+    try{
+        await adminFetch("/api/admin/custom-order", { method: "PUT", body: JSON.stringify({ ids: customIds }) });
+        note.textContent = "kaydedildi ✓";
+        await loadCustomOrder();
+    }catch(e){
+        note.textContent = "";
+        showAdminError("Sıra kaydedilemedi: " + e.message);
+    }
+}
+
 async function loadDeleted(){
     const rows = await adminFetch("/api/admin/deleted");
     const list = document.getElementById("deleted-list");
@@ -398,7 +492,7 @@ async function initAdmin(){
         return;
     }
     try{
-        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted(), loadFeatured(), loadHistory()]);
+        await Promise.all([loadStats(), loadUsers(), loadInvite(), loadDeleted(), loadFeatured(), loadCustomOrder(), loadHistory()]);
         fillHistOptions();
     }catch(e){
         showAdminError("Panel yüklenemedi: " + e.message);
