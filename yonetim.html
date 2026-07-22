@@ -98,6 +98,13 @@
                             <input id="invite-input" class="form-input" placeholder="yükleniyor...">
                             <button class="form-btn" type="button" onclick="saveInvite()">Kaydet</button>
                         </div>
+                        <p class="straightText admin-hint" style="margin-top:22px;">Karakterler sayfasının varsayılan sıralaması. Özel = oluşturulma sırası (eskiden yeniye), ziyaretçi sayfada değiştirebilir.</p>
+                        <div class="edit-row">
+                            <select id="sort-input" class="form-input" onchange="saveCharSort()">
+                                <option value="ozel">Özel (oluşturulma)</option>
+                                <option value="alfabetik">Alfabetik (A–Z)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </main>

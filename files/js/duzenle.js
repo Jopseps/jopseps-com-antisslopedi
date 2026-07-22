@@ -145,6 +145,81 @@ function renderCatChips(){ renderChips("categories"); }
 function toggleFeatPicker(){ togglePicker("features"); }
 function renderFeatChips(){ renderChips("features"); }
 
+// --- İlk Görünüş seçici (tek değerli: chip'e tıklamak input'u doldurur) ---
+// PICKERS listeye satır ekliyor; bu alan tek metin olduğu için ayrı, sade bir seçici.
+
+let faData = [];   // [{value, count}] — var olan İlk Görünüş değerleri
+
+async function loadFaPicker(){
+    try{
+        const res = await fetch(API + "/api/first-appearances");
+        if(res.ok) faData = await res.json();
+    }catch(e){
+        faData = [];
+    }
+    renderFaChips();
+}
+
+function toggleFaPicker(){
+    const picker = field("fa-picker");
+    const open = picker.style.display !== "none";
+    picker.style.display = open ? "none" : "";
+    field("fa-toggle").textContent = open ? "+ Seç" : "− Kapat";
+    if(!open){
+        renderFaChips();
+        field("fa-search").focus();
+    }
+}
+
+function renderFaChips(){
+    const box = field("fa-chips");
+    if(!box) return;
+    const cur = field("f-first-appearance").value.trim().toLocaleLowerCase("tr");
+    const raw = field("fa-search").value.trim();
+    const q = raw.toLocaleLowerCase("tr");
+    const list = q ? faData.filter(c => c.value.toLocaleLowerCase("tr").includes(q)) : faData;
+    box.innerHTML = "";
+    list.forEach(c => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (c.value.toLocaleLowerCase("tr") === cur ? " on" : "");
+        chip.onclick = () => setFaValue(c.value);
+        chip.appendChild(document.createTextNode(c.value));
+        const n = document.createElement("span");
+        n.className = "cat-chip-count";
+        n.textContent = c.count;
+        chip.appendChild(n);
+        box.appendChild(chip);
+    });
+    const exact = q && faData.some(c => c.value.toLocaleLowerCase("tr") === q);
+    if(q && !exact){
+        if(!list.length){
+            const empty = document.createElement("div");
+            empty.className = "cat-empty straightText";
+            empty.textContent = "Eşleşme yok";
+            box.appendChild(empty);
+        }
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "form-btn cat-new-btn";
+        add.textContent = `+ «${raw}» yaz`;
+        add.onclick = () => setFaValue(raw);
+        box.appendChild(add);
+    }
+}
+
+// tek değerli: seçilen chip zaten seçiliyse temizle (toggle), değilse input'a yaz
+function setFaValue(value){
+    const input = field("f-first-appearance");
+    if(input.value.trim().toLocaleLowerCase("tr") === value.toLocaleLowerCase("tr")){
+        input.value = "";
+    }else{
+        input.value = value;
+    }
+    field("fa-search").value = "";
+    renderFaChips();
+}
+
 // --- görsel ---
 
 let pendingFile = null;
@@ -611,6 +686,7 @@ async function initEditor(){
 
     loadPicker("categories");
     loadPicker("features");
+    loadFaPicker();
     loadChars();
 
     if(!charId){
