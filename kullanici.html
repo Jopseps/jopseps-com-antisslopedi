@@ -36,7 +36,18 @@
                 </div>
 
                 <h2 class="straightText section-title" style="font-size:130%;">Düzenlemeler</h2>
-                <div class="rev-list" id="edit-list"></div>
+                <div class="admin-list" id="edit-list"><p class="straightText">yükleniyor...</p></div>
+                <div class="hist-footer">
+                    <label class="straightText hist-per">
+                        sayfa başına
+                        <select id="edit-per" class="form-input" onchange="changeEditPer()">
+                            <option value="10">10</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                        </select>
+                    </label>
+                    <div class="hist-pager" id="edit-pager"></div>
+                </div>
             </main>
 
             <footer class="site-footer">
