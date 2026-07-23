@@ -162,4 +162,11 @@ function showError(msg){
     document.getElementById("infobox-body").innerHTML = "";
 }
 
+// Düzenle → kaydet → wiki (replace) sonrası "← Geri" geçmişteki *eski* wiki
+// girdisine düşer ve tarayıcı onu bfcache'ten aynen geri getirir (eski içerik).
+// bfcache'ten dönen her sayfayı tazele.
+window.addEventListener("pageshow", e => {
+    if(e.persisted) location.reload();
+});
+
 loadCharacter();

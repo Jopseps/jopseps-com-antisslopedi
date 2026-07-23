@@ -227,7 +227,7 @@ html{
 
 .projects-grid{
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     row-gap: 5px;
     gap: 20px;
 
@@ -671,11 +671,11 @@ body.dark .diff-img-frame.add{ border-color: #3fb950; background: #12261e; }
 }
 
 .featured-grid .char-card{
-    width: 300px;
+    width: 240px;
 }
 
 .featured-grid .char-card-img{
-    height: 280px;
+    height: 220px;
 }
 
 .big-link-btn{
@@ -894,7 +894,7 @@ body.dark .diff-img-frame.add{ border-color: #3fb950; background: #12261e; }
 /* Character cards (homepage grid) */
 .char-card{
     display: block;
-    width: 260px;
+    width: 240px;
     background-color: rgb(255, 255, 255);
     border: 2px solid rgb(204, 204, 204);
     border-radius: 12px;
@@ -913,7 +913,7 @@ body.dark .diff-img-frame.add{ border-color: #3fb950; background: #12261e; }
 
 .char-card-img{
     width: 100%;
-    height: 220px;
+    height: 205px;
     overflow: hidden;
     background-color: rgb(200, 200, 200);
     display: flex;
