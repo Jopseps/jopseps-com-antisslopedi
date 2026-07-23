@@ -1701,6 +1701,27 @@ body.dark .cat-chip.on{
     }
 }
 
+/* --- editör satır sıralama (duzenle.html) --- */
+
+.edit-row .row-drag{
+    align-self: center;
+    margin-right: 0;
+}
+
+.edit-row .row-move{
+    padding: 6px 8px;
+}
+
+.edit-row.dragging{
+    opacity: 0.4;
+}
+
+/* tek satır kaldıysa sıralanacak bir şey yok */
+.edit-row.no-reorder .row-drag,
+.edit-row.no-reorder .row-move{
+    display: none;
+}
+
 /* --- katkı puanı rozeti --- */
 
 .point-badge{
