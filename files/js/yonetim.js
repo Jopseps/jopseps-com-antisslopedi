@@ -238,6 +238,14 @@ async function loadInvite(){
     if(sort) sort.value = c.char_sort === "alfabetik" ? "alfabetik" : "ozel";
 }
 
+// davet kodu varsayılan yıldızlı — 👁 görünürlüğü açıp kapar
+function toggleInviteVisibility(){
+    const input = document.getElementById("invite-input");
+    const hidden = input.type === "password";
+    input.type = hidden ? "text" : "password";
+    document.getElementById("invite-eye").textContent = hidden ? "🙈" : "👁";
+}
+
 async function saveInvite(){
     showAdminError("");
     try{

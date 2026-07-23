@@ -436,6 +436,14 @@ html{
     font-size: 95%;
 }
 
+/* profil düzenleme listesi — admin-list yonetimde .admin-panel içinde duruyor,
+   profilde kendi genişlik sınırı gerekiyor */
+.profile-edits{
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 5%;
+}
+
 /* --- Admin panel --- */
 .admin-panel{
     max-width: 880px;
@@ -1786,7 +1794,7 @@ body.dark .point-badge{
     padding: 4px 8px;
     border: 1px solid #cccccc;
     border-radius: 6px;
-    background: none;
+    background: #ffffff;
     color: inherit;
     font: inherit;
     font-size: 90%;
@@ -1813,6 +1821,7 @@ body.dark .point-badge{
 }
 
 body.dark .page-btn{
+    background: rgb(50, 50, 50);
     border-color: rgb(110, 110, 110);
 }
 

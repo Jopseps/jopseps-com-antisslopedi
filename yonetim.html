@@ -109,7 +109,8 @@
                     <div class="admin-tab-content" id="tab-settings" style="display:none;">
                         <p class="straightText admin-hint">Bu kodla kayıt olanlar direkt editör olur. Kodsuz kayıt salt okunur hesap açar.</p>
                         <div class="edit-row">
-                            <input id="invite-input" class="form-input" placeholder="yükleniyor...">
+                            <input id="invite-input" class="form-input" type="password" placeholder="yükleniyor..." autocomplete="off">
+                            <button class="form-btn" type="button" id="invite-eye" onclick="toggleInviteVisibility()" title="göster/gizle" aria-label="Kodu göster/gizle">👁</button>
                             <button class="form-btn" type="button" onclick="saveInvite()">Kaydet</button>
                         </div>
                         <p class="straightText admin-hint" style="margin-top:22px;">Karakterler sayfasının varsayılan sıralaması. Özel = oluşturulma sırası (eskiden yeniye), ziyaretçi sayfada değiştirebilir.</p>
