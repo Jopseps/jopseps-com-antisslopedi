@@ -38,16 +38,70 @@ function makeRow(container, value){
     del.onclick = () => {
         row.remove();
         if(picker) renderChips(picker);
+        refreshReorder(container);
     };
     if(picker) input.oninput = () => renderChips(picker);
     row.appendChild(input);
     row.appendChild(del);
     container.appendChild(row);
+    makeReorderable(row, container, del);
 }
 
 function addRow(listName, value){
     makeRow(field("list-" + listName), value);
     if(PICKERS[listName]) renderChips(listName);
+}
+
+// --- satır sıralama (sürükle + ↑/↓) ---
+// Öne Çıkanlar panelindeki desen ama DOM düğümü taşınarak: satırlar state taşıyor
+// (_variantId, _syncRel, input değerleri), diziden yeniden çizmek onları kaybederdi.
+// Kayıt sırası korunur: worker child satırları dizi sırasıyla insert eder, select'lerde
+// ORDER BY yok (rowid = ekleme sırası), yani sıralama server tarafı değişikliği istemez.
+
+let dragRowEl = null;
+
+// tek satır kaldıysa sıralama kontrollerini gizle — her ekleme/silmede çağrılır
+function refreshReorder(container){
+    const rows = [...container.querySelectorAll(".edit-row")];
+    rows.forEach(r => r.classList.toggle("no-reorder", rows.length < 2));
+}
+
+function moveRowBtn(row, container, label, delta){
+    const b = document.createElement("button");
+    b.className = "form-btn row-move";
+    b.type = "button";
+    b.textContent = label;
+    b.onclick = () => {
+        if(delta < 0 && row.previousElementSibling) container.insertBefore(row, row.previousElementSibling);
+        if(delta > 0 && row.nextElementSibling) container.insertBefore(row.nextElementSibling, row);
+    };
+    return b;
+}
+
+// before = "sil" butonu; ↑/↓ onun soluna girer, ≡ tutamaç satırın başına.
+// draggable sadece tutamaç basılıyken açılır — tüm satır draggable olsaydı
+// input içinde metin seçmek sürüklemeye dönüşürdü.
+function makeReorderable(row, container, before){
+    const handle = document.createElement("span");
+    handle.className = "drag-handle row-drag";
+    handle.textContent = "≡";
+    handle.title = "sürükleyerek sırala";
+    handle.onmousedown = () => { row.draggable = true; };
+    row.onmouseup = () => { row.draggable = false; };
+    row.ondragstart = () => { dragRowEl = row; row.classList.add("dragging"); };
+    row.ondragend = () => { dragRowEl = null; row.draggable = false; row.classList.remove("dragging"); };
+    row.ondragover = e => { if(dragRowEl && dragRowEl !== row && dragRowEl.parentNode === container) e.preventDefault(); };
+    row.ondrop = e => {
+        e.preventDefault();
+        if(!dragRowEl || dragRowEl === row || dragRowEl.parentNode !== container) return;
+        const rows = [...container.children];
+        if(rows.indexOf(dragRowEl) < rows.indexOf(row)) container.insertBefore(dragRowEl, row.nextSibling);
+        else container.insertBefore(dragRowEl, row);
+    };
+    row.insertBefore(handle, row.firstChild);
+    row.insertBefore(moveRowBtn(row, container, "↑", -1), before);
+    row.insertBefore(moveRowBtn(row, container, "↓", 1), before);
+    refreshReorder(container);
 }
 
 // --- kategori / özellik seçici ---
@@ -420,13 +474,14 @@ function addVariantRow(variantId, variantName){
     del.className = "form-btn";
     del.type = "button";
     del.textContent = "sil";
-    del.onclick = () => { row.remove(); renderVarChips(); };
+    del.onclick = () => { row.remove(); renderVarChips(); refreshReorder(field("list-variants")); };
     row.appendChild(input);
     row.appendChild(hint);
     row.appendChild(del);
     row._syncVar = render;
     render();
     field("list-variants").appendChild(row);
+    makeReorderable(row, field("list-variants"), del);
 }
 
 // --- varyasyon seçici ---
@@ -562,7 +617,7 @@ function addRelationRow(relatedId, label){
     del.className = "form-btn";
     del.type = "button";
     del.textContent = "sil";
-    del.onclick = () => { row.remove(); renderRelChips(); };
+    del.onclick = () => { row.remove(); renderRelChips(); refreshReorder(field("list-relations")); };
     row.appendChild(idInput);
     row.appendChild(hint);
     row.appendChild(labelInput);
@@ -570,6 +625,7 @@ function addRelationRow(relatedId, label){
     row._syncRel = sync;
     sync();
     field("list-relations").appendChild(row);
+    makeReorderable(row, field("list-relations"), del);
     renderRelChips();
 }
 
