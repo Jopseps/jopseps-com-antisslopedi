@@ -7,21 +7,31 @@ async function loadCharacter(){
         return;
     }
 
-    let char;
+    let char, charMap = new Map();
     try{
-        const res = await fetch(`${API}/api/characters/${encodeURIComponent(id)}`);
+        // tek karakter + isim haritası paralel; harita [[id]] linklerini çözer.
+        // Harita çekimi hata verse de sayfa render olmalı → link olmadan.
+        const [res, listRes] = await Promise.all([
+            fetch(`${API}/api/characters/${encodeURIComponent(id)}`),
+            fetch(`${API}/api/characters`).catch(() => null),
+        ]);
         if(res.status === 404){
             showError("Karakter bulunamadı: " + id);
             return;
         }
         if(!res.ok) throw new Error(res.status);
         char = await res.json();
+        if(listRes && listRes.ok){
+            try{
+                (await listRes.json()).forEach(c => charMap.set(c.id, c.name));
+            }catch(e){}
+        }
     }catch(e){
         showError("Yüklenemedi. Tekrar dene.");
         return;
     }
 
-    renderArticle(char);
+    renderArticle(char, charMap);
     renderInfobox(char);
     renderActions(id);
     buildTOC();
@@ -51,17 +61,42 @@ function goBack(){
     }
 }
 
-function renderArticle(char){
+// [[id]] veya [[id|görünen ad]] → wiki linki. Wikipedia gibi: her id sadece ilk
+// geçtiğinde linklenir (paylaşılan `seen`), sonrakiler düz metin. Bilinmeyen id
+// (sayfası yok) da düz metin. Ham metin parçalanır, her parça ayrı escHtml'lenir.
+function linkify(text, charMap, seen){
+    if(!text) return "";
+    const re = /\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g;
+    let out = "", last = 0, m;
+    while((m = re.exec(text))){
+        out += escHtml(text.slice(last, m.index));
+        const id = m[1].trim();
+        const exists = charMap.has(id);
+        const disp = (m[2] != null ? m[2] : (exists ? charMap.get(id) : id)).trim();
+        if(exists && !seen.has(id)){
+            seen.add(id);
+            out += `<a href="wiki.html?char=${encodeURIComponent(id)}">${escHtml(disp)}</a>`;
+        }else{
+            out += escHtml(disp);
+        }
+        last = m.index + m[0].length;
+    }
+    out += escHtml(text.slice(last));
+    return out;
+}
+
+function renderArticle(char, charMap){
     document.getElementById("wiki-title").textContent = char.name;
     document.getElementById("wiki-summary").textContent = char.summary || "";
     document.title = char.name + " — Antisslopedi";
 
     let html = "";
+    const seen = new Set();   // makale genelinde ilk-geçiş linklemesi (Genel + Hikaye)
 
-    html += `<section class="wiki-section"><h2>Genel</h2><p>${escHtml(char.description || "")}</p></section>`;
+    html += `<section class="wiki-section"><h2>Genel</h2><p>${linkify(char.description, charMap, seen)}</p></section>`;
 
     if(char.story){
-        html += `<section class="wiki-section"><h2>Hikaye</h2><p>${escHtml(char.story)}</p></section>`;
+        html += `<section class="wiki-section"><h2>Hikaye</h2><p>${linkify(char.story, charMap, seen)}</p></section>`;
     }
 
     if(char.features && char.features.length){
