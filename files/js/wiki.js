@@ -21,6 +21,7 @@ async function loadCharacter(){
         }
         if(!res.ok) throw new Error(res.status);
         char = await res.json();
+        navPush(id);
         if(listRes && listRes.ok){
             try{
                 (await listRes.json()).forEach(c => charMap.set(c.id, c.name));
@@ -48,14 +49,32 @@ function renderActions(id){
     el.innerHTML = html;
 }
 
-// history.back() only when we came from within the site; direct/shared links go home
+// Kendi gezinme yığını (tarayıcı geçmişini elle silemeyiz). Ard arda aynı sayfa
+// tekrarlarını ve A↔B salınımını eritir: id yığında zaten varsa oraya kadar
+// budanır, yoksa eklenir. Böylece geri hep "farklı" bir önceki sayfaya düşer.
+const NAV_KEY = "antisslopedi_nav";
+function navLoad(){
+    try{ return JSON.parse(sessionStorage.getItem(NAV_KEY)) || []; }catch(e){ return []; }
+}
+function navSave(s){
+    try{ sessionStorage.setItem(NAV_KEY, JSON.stringify(s)); }catch(e){}
+}
+function navPush(id){
+    const s = navLoad();
+    const idx = s.lastIndexOf(id);
+    if(idx >= 0){ s.length = idx + 1; }   // tekrar/salınım → o id'ye kadar buda
+    else{ s.push(id); }
+    navSave(s);
+}
+
+// Geri: şu anki sayfayı yığından at, kalan son (farklı) sayfaya git; boşsa ana sayfa.
 function goBack(){
-    let sameSite = false;
-    try{
-        sameSite = !!document.referrer && new URL(document.referrer).origin === location.origin;
-    }catch(e){}
-    if(sameSite && history.length > 1){
-        history.back();
+    const s = navLoad();
+    s.pop();
+    const target = s[s.length - 1];
+    navSave(s);
+    if(target){
+        location.href = "wiki.html?char=" + encodeURIComponent(target);
     }else{
         location.href = "index.html";
     }
