@@ -390,6 +390,23 @@ html{
     margin-top: 26px;
 }
 
+/* --- Form field hint (muted) --- */
+.field-hint{
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.7;
+}
+.field-hint code{
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.07);
+}
+body.dark .field-hint code{
+    background: rgba(255, 255, 255, 0.12);
+}
+
 /* --- Recent changes (muted, unobtrusive) --- */
 .changes-box{
     max-width: 520px;
